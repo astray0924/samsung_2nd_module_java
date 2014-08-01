@@ -7,7 +7,7 @@ public class Main {
 	public static void main(String[] args) {
 		FeatureExtractor extractor = new FeatureExtractor();
 		try {
-			extractor.test();
+			extractor.extract();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
