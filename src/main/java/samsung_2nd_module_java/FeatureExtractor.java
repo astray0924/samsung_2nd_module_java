@@ -70,11 +70,12 @@ public class FeatureExtractor {
 						Set<String> nps = new HashSet<String>();
 						Matcher npMatcher = NP_PATTERN.matcher(sent);
 						while (npMatcher.find()) {
-							String np = npMatcher.group().trim()
-									.replaceAll(NP_TAG_PATTERN, "");
+							String np = npMatcher.group()
+									.replaceAll(NP_TAG_PATTERN, "").trim();
 
 							// 언어적 처리
 							np = np.toLowerCase();
+							np = np.replaceAll("\\bthe\\b", "").trim();
 
 							// 저장
 							nps.add(np);
