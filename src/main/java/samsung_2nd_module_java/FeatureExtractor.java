@@ -11,10 +11,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class FeatureExtractor {
-	public static final String DATA_DIR = "data";
-	public static final String DATA_POS = "sample_pos_tagging.txt";
-	public static final String DATA_TARGET = "sample_senti_target.txt";
-	public static final String DATA_SENTI = "sample_sentiment.txt";
+	private static final String DATA_DIR = "data";
+	private static final String DATA_POS = "sample_pos_tagging.txt";
+	private static final String DATA_TARGET = "sample_senti_target.txt";
+	private static final String DATA_SENTI = "sample_sentiment.txt";
 
 	// 정규표현식
 	private static final String SENT_PATTERN_STRING = "\\b(\\w+/NN\\s?)+\\w+/VB[PZ]? (\\w+/RB\\s)?\\w+/JJ(\\s*,/, (\\w+/RB\\s)?\\w+/JJ(\\s,/,)?)*(\\s\\w+/CC (\\w+/RB\\s)?\\w+/JJ)?\\s";
@@ -28,12 +28,12 @@ public class FeatureExtractor {
 	private static final String JJ_PATTERN_STRING = "(\\w+/JJ)+";
 	private static final Pattern JJ_PATTERN = Pattern
 			.compile(JJ_PATTERN_STRING);
-	
+
 	private static final String NP_TAG_PATTERN = "/NN[PS]{0,2}";
 	private static final String JJ_TAG_PATTERN = "/JJ[RS]{0,1}";
 
 	public FeatureExtractor() {
-		
+
 	}
 
 	public void extract() throws IOException {
@@ -55,15 +55,17 @@ public class FeatureExtractor {
 						Matcher npMatcher = NP_PATTERN.matcher(sent);
 						while (npMatcher.find()) {
 							String np = npMatcher.group().trim();
-							System.out.println(np.replaceAll(NP_TAG_PATTERN, ""));
+							System.out.println(np
+									.replaceAll(NP_TAG_PATTERN, ""));
 						}
-						
+
 						// JJ 추출
 						Matcher jjMatcher = JJ_PATTERN.matcher(sent);
 						while (jjMatcher.find()) {
-							String jj = jjMatcher.group().trim();
-							System.out.println(jj.replaceAll(JJ_TAG_PATTERN, ""));
-							
+							String jj = jjMatcher.group().trim()
+									.replaceAll(JJ_TAG_PATTERN, "");
+							System.out.println(SpellCheckerManager
+									.getSuggestion(jj));
 						}
 					}
 				}
