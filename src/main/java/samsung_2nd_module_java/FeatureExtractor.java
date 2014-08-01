@@ -16,8 +16,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.google.common.collect.HashMultiset;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multiset;
-import com.google.common.collect.TreeMultiset;
+import com.google.common.collect.Multiset.Entry;
+import com.google.common.collect.Multisets;
 
 public class FeatureExtractor {
 	private static final String DATA_DIR = "data";
@@ -43,11 +45,23 @@ public class FeatureExtractor {
 
 	// 결과물
 	private Multiset<String> tokens = HashMultiset.create();
-	private Multiset<String> all_np = TreeMultiset.create();
+	private Multiset<String> allNP = HashMultiset.create();
 	private Map<String, Multiset<String>> np_context = new HashMap<String, Multiset<String>>();
 
 	public FeatureExtractor() {
 
+	}
+
+	public Map<String, Multiset<String>> getContexts() {
+		return np_context;
+	}
+
+	public ImmutableSet<Entry<String>> getTokens() {
+		return Multisets.copyHighestCountFirst(tokens).entrySet();
+	}
+
+	public ImmutableSet<Entry<String>> getNPs() {
+		return Multisets.copyHighestCountFirst(allNP).entrySet();
 	}
 
 	public void extract() throws IOException {
@@ -56,6 +70,7 @@ public class FeatureExtractor {
 		try (BufferedReader reader = Files.newBufferedReader(dataFile,
 				StandardCharsets.UTF_8)) {
 			String line = "";
+			int i = 0;
 			while ((line = reader.readLine()) != null) {
 				line = line.trim();
 
@@ -80,7 +95,7 @@ public class FeatureExtractor {
 							// 저장
 							nps.add(np);
 						}
-						all_np.addAll(nps);
+						allNP.addAll(nps);
 						tokens.addAll(nps);
 
 						// JJ 추출
@@ -117,23 +132,23 @@ public class FeatureExtractor {
 						}
 					}
 				}
-			}
 
-			// 디버깅
-			System.out.println(np_context);
+				// 처리한 라인 개수 출력
+				System.out.println(++i);
+			}
 		}
 	}
 
-	private void listDataDir() {
-		try {
-			Path dir = Paths.get(DATA_DIR);
-			DirectoryStream<Path> stream = Files.newDirectoryStream(dir,
-					"*.txt");
-			for (Path entry : stream) {
-				System.out.println(entry.getFileName());
-			}
-		} catch (IOException e) {
-			System.out.println(e.getMessage());
-		}
-	}
+	// private void listDataDir() {
+	// try {
+	// Path dir = Paths.get(DATA_DIR);
+	// DirectoryStream<Path> stream = Files.newDirectoryStream(dir,
+	// "*.txt");
+	// for (Path entry : stream) {
+	// System.out.println(entry.getFileName());
+	// }
+	// } catch (IOException e) {
+	// System.out.println(e.getMessage());
+	// }
+	// }
 }
