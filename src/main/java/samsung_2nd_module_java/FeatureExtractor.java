@@ -33,7 +33,7 @@ public class FeatureExtractor {
 	private static final String JJ_TAG_PATTERN = "/JJ[RS]{0,1}";
 
 	public FeatureExtractor() {
-
+		
 	}
 
 	public void extract() throws IOException {
@@ -63,6 +63,7 @@ public class FeatureExtractor {
 						while (jjMatcher.find()) {
 							String jj = jjMatcher.group().trim();
 							System.out.println(jj.replaceAll(JJ_TAG_PATTERN, ""));
+							
 						}
 					}
 				}

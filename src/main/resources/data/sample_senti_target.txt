@@ -1,0 +1,574 @@
+{
+    "document": {
+        "file name": "productFileName",
+        "target_list": [
+            {
+                "opinion target": "phone"
+            },
+            {
+                "opinion target": "t-mobile"
+            },
+            {
+                "opinion target": "week"
+            },
+            {
+                "opinion target": "area"
+            },
+            {
+                "opinion target": "suburbs"
+            },
+            {
+                "opinion target": "reception"
+            },
+            {
+                "opinion target": "motorola"
+            },
+            {
+                "opinion target": "panasonic"
+            },
+            {
+                "opinion target": "nokia"
+            },
+            {
+                "opinion target": "phones"
+            },
+            {
+                "opinion target": "feature"
+            },
+            {
+                "opinion target": "voice"
+            },
+            {
+                "opinion target": "recognition"
+            },
+            {
+                "opinion target": "speaker"
+            },
+            {
+                "opinion target": "radio"
+            },
+            {
+                "opinion target": "car"
+            },
+            {
+                "opinion target": "freeway"
+            },
+            {
+                "opinion target": "blessing"
+            },
+            {
+                "opinion target": "book"
+            },
+            {
+                "opinion target": "hours"
+            },
+            {
+                "opinion target": "numbers"
+            },
+            {
+                "opinion target": "day"
+            },
+            {
+                "opinion target": "carrier"
+            },
+            {
+                "opinion target": "games"
+            },
+            {
+                "opinion target": "stations"
+            },
+            {
+                "opinion target": "headset"
+            },
+            {
+                "opinion target": "volume"
+            },
+            {
+                "opinion target": "ears"
+            },
+            {
+                "opinion target": "ringtones"
+            },
+            {
+                "opinion target": "memory"
+            },
+            {
+                "opinion target": "colors"
+            },
+            {
+                "opinion target": "downside"
+            },
+            {
+                "opinion target": "person"
+            },
+            {
+                "opinion target": "t-zones"
+            },
+            {
+                "opinion target": "dozen"
+            },
+            {
+                "opinion target": "times"
+            },
+            {
+                "opinion target": "wap"
+            },
+            {
+                "opinion target": "purposes"
+            },
+            {
+                "opinion target": "calls"
+            },
+            {
+                "opinion target": "services"
+            },
+            {
+                "opinion target": "return"
+            },
+            {
+                "opinion target": "bottom"
+            },
+            {
+                "opinion target": "soldiers"
+            },
+            {
+                "opinion target": "effort"
+            },
+            {
+                "opinion target": "regard"
+            },
+            {
+                "opinion target": "indestructibility"
+            },
+            {
+                "opinion target": "cell"
+            },
+            {
+                "opinion target": "ericsson"
+            },
+            {
+                "opinion target": "menus"
+            },
+            {
+                "opinion target": "offers"
+            },
+            {
+                "opinion target": "speakerphone"
+            },
+            {
+                "opinion target": "megatones"
+            },
+            {
+                "opinion target": "touch"
+            },
+            {
+                "opinion target": "fm"
+            },
+            {
+                "opinion target": "deal"
+            },
+            {
+                "opinion target": "breaker"
+            },
+            {
+                "opinion target": "scratch"
+            },
+            {
+                "opinion target": "tones"
+            },
+            {
+                "opinion target": "mechanism"
+            },
+            {
+                "opinion target": "dialing"
+            },
+            {
+                "opinion target": "messages"
+            },
+            {
+                "opinion target": "email"
+            },
+            {
+                "opinion target": "support"
+            },
+            {
+                "opinion target": "shelf"
+            },
+            {
+                "opinion target": "avail"
+            },
+            {
+                "opinion target": "earpiece"
+            },
+            {
+                "opinion target": "keys"
+            },
+            {
+                "opinion target": "gsm"
+            },
+            {
+                "opinion target": "answers"
+            },
+            {
+                "opinion target": "tri-band"
+            },
+            {
+                "opinion target": "countries"
+            },
+            {
+                "opinion target": "asia"
+            },
+            {
+                "opinion target": "africa"
+            },
+            {
+                "opinion target": "bar"
+            },
+            {
+                "opinion target": "benefit"
+            },
+            {
+                "opinion target": "occasion"
+            },
+            {
+                "opinion target": "company"
+            },
+            {
+                "opinion target": "sim"
+            },
+            {
+                "opinion target": "weight"
+            },
+            {
+                "opinion target": "pocket"
+            },
+            {
+                "opinion target": "reasons"
+            },
+            {
+                "opinion target": "pants"
+            },
+            {
+                "opinion target": "ir"
+            },
+            {
+                "opinion target": "inconveniences"
+            },
+            {
+                "opinion target": "bluetooth"
+            },
+            {
+                "opinion target": "internet"
+            },
+            {
+                "opinion target": "ringing"
+            },
+            {
+                "opinion target": "web"
+            },
+            {
+                "opinion target": "ring"
+            },
+            {
+                "opinion target": "connector"
+            },
+            {
+                "opinion target": "luxury"
+            },
+            {
+                "opinion target": "keypad"
+            },
+            {
+                "opinion target": "sales"
+            },
+            {
+                "opinion target": "cellphone"
+            },
+            {
+                "opinion target": "talks"
+            },
+            {
+                "opinion target": "bed"
+            },
+            {
+                "opinion target": "pillowside"
+            },
+            {
+                "opinion target": "wallpapers"
+            },
+            {
+                "opinion target": "t-mobiles"
+            },
+            {
+                "opinion target": "s105"
+            },
+            {
+                "opinion target": "imo"
+            },
+            {
+                "opinion target": "nokias"
+            },
+            {
+                "opinion target": "motorolla"
+            },
+            {
+                "opinion target": "t720"
+            },
+            {
+                "opinion target": "t610"
+            },
+            {
+                "opinion target": "ear"
+            },
+            {
+                "opinion target": "screens"
+            },
+            {
+                "opinion target": "functions"
+            },
+            {
+                "opinion target": "functionality"
+            },
+            {
+                "opinion target": "suite"
+            },
+            {
+                "opinion target": "versions"
+            },
+            {
+                "opinion target": "port"
+            },
+            {
+                "opinion target": "laptop"
+            },
+            {
+                "opinion target": "microsoft"
+            },
+            {
+                "opinion target": "account"
+            },
+            {
+                "opinion target": "stick"
+            },
+            {
+                "opinion target": "simm"
+            },
+            {
+                "opinion target": "cards"
+            },
+            {
+                "opinion target": "nations"
+            },
+            {
+                "opinion target": "complaints"
+            },
+            {
+                "opinion target": "station"
+            },
+            {
+                "opinion target": "handset"
+            },
+            {
+                "opinion target": "wait"
+            },
+            {
+                "opinion target": "location"
+            },
+            {
+                "opinion target": "ergonomics"
+            },
+            {
+                "opinion target": "quiet"
+            },
+            {
+                "opinion target": "summer"
+            },
+            {
+                "opinion target": "browsing"
+            },
+            {
+                "opinion target": "grade"
+            },
+            {
+                "opinion target": "sister"
+            },
+            {
+                "opinion target": "oz"
+            },
+            {
+                "opinion target": "polymer"
+            },
+            {
+                "opinion target": "average"
+            },
+            {
+                "opinion target": "sync"
+            },
+            {
+                "opinion target": "data"
+            },
+            {
+                "opinion target": "phonebook"
+            },
+            {
+                "opinion target": "java"
+            },
+            {
+                "opinion target": "capabilities"
+            },
+            {
+                "opinion target": "style"
+            },
+            {
+                "opinion target": "guy"
+            },
+            {
+                "opinion target": "force"
+            },
+            {
+                "opinion target": "advantages"
+            },
+            {
+                "opinion target": "l7089"
+            },
+            {
+                "opinion target": "gsm850"
+            },
+            {
+                "opinion target": "gsm800"
+            },
+            {
+                "opinion target": "edge"
+            },
+            {
+                "opinion target": "quad"
+            },
+            {
+                "opinion target": "gsm900"
+            },
+            {
+                "opinion target": "subscriber"
+            },
+            {
+                "opinion target": "heads"
+            },
+            {
+                "opinion target": "addresses"
+            },
+            {
+                "opinion target": "regrets"
+            },
+            {
+                "opinion target": "deficiencies"
+            },
+            {
+                "opinion target": "communications"
+            },
+            {
+                "opinion target": "treo"
+            },
+            {
+                "opinion target": "contact"
+            },
+            {
+                "opinion target": "bet"
+            },
+            {
+                "opinion target": "patience"
+            },
+            {
+                "opinion target": "sl55"
+            },
+            {
+                "opinion target": "feel"
+            },
+            {
+                "opinion target": "companies"
+            },
+            {
+                "opinion target": "modem"
+            },
+            {
+                "opinion target": "gprs"
+            },
+            {
+                "opinion target": "matter"
+            },
+            {
+                "opinion target": "lack"
+            },
+            {
+                "opinion target": "excels"
+            },
+            {
+                "opinion target": "god"
+            },
+            {
+                "opinion target": "commands"
+            },
+            {
+                "opinion target": "campaign"
+            },
+            {
+                "opinion target": "handsfree"
+            },
+            {
+                "opinion target": "mess"
+            },
+            {
+                "opinion target": "outweighs"
+            },
+            {
+                "opinion target": "shortcoming"
+            },
+            {
+                "opinion target": "entries"
+            },
+            {
+                "opinion target": "entry"
+            },
+            {
+                "opinion target": "boss"
+            },
+            {
+                "opinion target": "cool"
+            },
+            {
+                "opinion target": "movies"
+            },
+            {
+                "opinion target": "writing"
+            },
+            {
+                "opinion target": "game"
+            },
+            {
+                "opinion target": "downloads"
+            },
+            {
+                "opinion target": "error"
+            },
+            {
+                "opinion target": "message"
+            },
+            {
+                "opinion target": "representative"
+            },
+            {
+                "opinion target": "stars"
+            },
+            {
+                "opinion target": "languages"
+            },
+            {
+                "opinion target": "dutch"
+            },
+            {
+                "opinion target": "form"
+            },
+            {
+                "opinion target": "hiss"
+            }
+        ]
+    }
+}
