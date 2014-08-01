@@ -7,8 +7,17 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Multiset;
+import com.google.common.collect.TreeMultiset;
 
 public class FeatureExtractor {
 	private static final String DATA_DIR = "data";
@@ -32,8 +41,10 @@ public class FeatureExtractor {
 	private static final String NP_TAG_PATTERN = "/NN[PS]{0,2}";
 	private static final String JJ_TAG_PATTERN = "/JJ[RS]{0,1}";
 
-	// Stemmer
-	private Stemmer stemmer = new Stemmer();
+	// 결과물
+	private Multiset<String> tokens = HashMultiset.create();
+	private Multiset<String> all_np = TreeMultiset.create();
+	private Map<String, Multiset<String>> np_context = new HashMap<String, Multiset<String>>();
 
 	public FeatureExtractor() {
 
@@ -56,29 +67,59 @@ public class FeatureExtractor {
 						String sent = sentMatcher.group().trim();
 
 						// NP 추출
+						Set<String> nps = new HashSet<String>();
 						Matcher npMatcher = NP_PATTERN.matcher(sent);
 						while (npMatcher.find()) {
-							String np = npMatcher.group().trim();
-							// System.out.println(np
-							// .replaceAll(NP_TAG_PATTERN, ""));
+							String np = npMatcher.group().trim()
+									.replaceAll(NP_TAG_PATTERN, "");
+
+							// 언어적 처리
+							np = np.toLowerCase();
+
+							// 저장
+							nps.add(np);
 						}
+						all_np.addAll(nps);
+						tokens.addAll(nps);
 
 						// JJ 추출
+						Multiset<String> jjs = HashMultiset.create();
 						Matcher jjMatcher = JJ_PATTERN.matcher(sent);
 						while (jjMatcher.find()) {
 							String jj = jjMatcher.group().trim()
 									.replaceAll(JJ_TAG_PATTERN, "");
-							String jjC = SpellCheckerManager.getSuggestion(jj);
-							System.out.println(jjC);
 
-							stemmer.add(jjC.toCharArray(), jjC.length());
+							// 언어적 처리
+							jj = jj.toLowerCase();
+							jj = SpellCheckerManager.getSuggestion(jj);
+							Stemmer stemmer = new Stemmer();
+							stemmer.add(jj.toCharArray(), jj.length());
 							stemmer.stem();
-							String jjNew = stemmer.toString();
-							System.out.println(jjNew);
+							jj = stemmer.toString();
+
+							// Multiset에 추가
+							jjs.add(jj);
+						}
+						tokens.addAll(jjs);
+
+						// NP context 구축
+						for (String np : nps) {
+							if (np_context.containsKey(np)) {
+								Multiset<String> ctx = np_context.get(np);
+								Iterator<String> iter = jjs.iterator();
+								while (iter.hasNext()) {
+									ctx.add(iter.next());
+								}
+							} else {
+								np_context.put(np, jjs);
+							}
 						}
 					}
 				}
 			}
+
+			// 디버깅
+			System.out.println(np_context);
 		}
 	}
 
