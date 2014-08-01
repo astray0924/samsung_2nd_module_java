@@ -1,0 +1,55 @@
+<sentence id="0">
+  <word wid="0" pos="IN">If</word>
+  <word wid="1" pos="PRP">you</word>
+  <word wid="2" pos="VBP">have</word>
+  <word wid="3" pos="VBN">read</word>
+  <word wid="4" pos="IN">that</word>
+  <word wid="5" pos="DT">this</word>
+  <word wid="6" pos="NN">restaurant</word>
+  <word wid="7" pos="VBZ">is</word>
+  <word wid="8" pos="JJ">fabulous</word>
+  <word wid="9" pos=",">,</word>
+  <word wid="10" pos="CC">and</word>
+  <word wid="11" pos="RB">then</word>
+  <word wid="12" pos="PRP">you</word>
+  <word wid="13" pos="VBP">go</word>
+  <word wid="14" pos="VBG">expecting</word>
+  <word wid="15" pos="JJ">good</word>
+  <word wid="16" pos="NN">food</word>
+  <word wid="17" pos=",">,</word>
+  <word wid="18" pos="JJ">good</word>
+  <word wid="19" pos="NN">ambience</word>
+  <word wid="20" pos="CC">and</word>
+  <word wid="21" pos="JJ">good</word>
+  <word wid="22" pos="NN">service</word>
+  <word wid="23" pos=",">,</word>
+  <word wid="24" pos="PRP">you</word>
+  <word wid="25" pos="MD">will</word>
+  <word wid="26" pos="RB">just</word>
+  <word wid="27" pos="VB">find</word>
+  <word wid="28" pos="DT">this</word>
+  <word wid="29" pos="JJ">last</word>
+  <word wid="30" pos="CD">one</word>
+  <word wid="31" pos=".">.</word>
+</sentence>
+<sentence id="1">
+  <word wid="0" pos="DT">The</word>
+  <word wid="1" pos="NNS">tables</word>
+  <word wid="2" pos="VBP">are</word>
+  <word wid="3" pos="RB">so</word>
+  <word wid="4" pos="JJ">close</word>
+  <word wid="5" pos="RB">together</word>
+  <word wid="6" pos="IN">that</word>
+  <word wid="7" pos="PRP">it</word>
+  <word wid="8" pos="VBZ">is</word>
+  <word wid="9" pos="JJ">impossible</word>
+  <word wid="10" pos="TO">to</word>
+  <word wid="11" pos="VB">have</word>
+  <word wid="12" pos="DT">a</word>
+  <word wid="13" pos="JJ">private</word>
+  <word wid="14" pos="NN">conversation</word>
+  <word wid="15" pos=".">.</word>
+</sentence>
+<sentence id="2">
+  <word wid="0" pos="DT">The</word>
+  <
