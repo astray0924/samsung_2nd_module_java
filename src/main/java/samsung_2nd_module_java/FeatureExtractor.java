@@ -32,6 +32,9 @@ public class FeatureExtractor {
 	private static final String NP_TAG_PATTERN = "/NN[PS]{0,2}";
 	private static final String JJ_TAG_PATTERN = "/JJ[RS]{0,1}";
 
+	// Stemmer
+	private Stemmer stemmer = new Stemmer();
+
 	public FeatureExtractor() {
 
 	}
@@ -46,6 +49,7 @@ public class FeatureExtractor {
 				line = line.trim();
 
 				// 문장이 비어있지 않을 때에만 처리
+				// TODO: 소문자화, Stemming
 				if (!line.isEmpty()) {
 					Matcher sentMatcher = SENT_PATTERN.matcher(line);
 					while (sentMatcher.find()) {
@@ -55,8 +59,8 @@ public class FeatureExtractor {
 						Matcher npMatcher = NP_PATTERN.matcher(sent);
 						while (npMatcher.find()) {
 							String np = npMatcher.group().trim();
-							System.out.println(np
-									.replaceAll(NP_TAG_PATTERN, ""));
+							// System.out.println(np
+							// .replaceAll(NP_TAG_PATTERN, ""));
 						}
 
 						// JJ 추출
@@ -64,8 +68,13 @@ public class FeatureExtractor {
 						while (jjMatcher.find()) {
 							String jj = jjMatcher.group().trim()
 									.replaceAll(JJ_TAG_PATTERN, "");
-							System.out.println(SpellCheckerManager
-									.getSuggestion(jj));
+							String jjC = SpellCheckerManager.getSuggestion(jj);
+							System.out.println(jjC);
+
+							stemmer.add(jjC.toCharArray(), jjC.length());
+							stemmer.stem();
+							String jjNew = stemmer.toString();
+							System.out.println(jjNew);
 						}
 					}
 				}
