@@ -24,7 +24,7 @@ import com.google.common.collect.Multiset.Entry;
 import com.google.common.collect.Multisets;
 
 public class FeatureExtractor {
-	private static final String DATA_DIR = "data";
+	private static final String DATA_DIR = "resources/data";
 	private static final String DATA_POS = "sample_pos_tagging.txt";
 	private static final String DATA_TARGET = "sample_senti_target.txt";
 	private static final String DATA_SENTI = "sample_sentiment.txt";
@@ -49,13 +49,11 @@ public class FeatureExtractor {
 	private Multiset<String> tokens = HashMultiset.create();
 	private Multiset<String> allNPs = HashMultiset.create();
 
-	// 벡터들
+	// 벡터화
+	private Alphabet vocabulary = new Alphabet();
 	private Map<String, Multiset<String>> countContexts = new HashMap<String, Multiset<String>>();
 	private Map<String, HashMap<String, Double>> ppmiContexts = new HashMap<String, HashMap<String, Double>>();
 	private Map<String, FeatureVector> vectors = new HashMap<String, FeatureVector>();
-
-	// Vectorize
-	private Alphabet vocabulary = new Alphabet();
 
 	public Map<String, Multiset<String>> getCountContexts() {
 		return countContexts;
@@ -74,9 +72,7 @@ public class FeatureExtractor {
 		vocabulary = new Alphabet();
 		for (java.util.Map.Entry<String, Multiset<String>> entry : countContexts
 				.entrySet()) {
-			String np = entry.getKey();
 			Multiset<String> context = entry.getValue();
-
 			vocabulary.lookupIndices(context.toArray(), true);
 		}
 		vocabulary.stopGrowth();
@@ -142,11 +138,20 @@ public class FeatureExtractor {
 		}
 
 	}
+	
+	public void debugClassification(String target) {
+		if (!vectors.containsKey(target)) {
+			throw new IllegalArgumentException("No such a target: " + target);
+		}
+		
+		FeatureVector targetVector = vectors.get(target);
+		System.out.println(targetVector);
+	}
 
 	public void debug() {
-		 System.out.println(countContexts);
-		 System.out.println(ppmiContexts);
-		 System.out.println(vectors);
+		System.out.println(countContexts);
+		System.out.println(ppmiContexts);
+		System.out.println(vectors);
 	}
 
 	public void extract() throws IOException {

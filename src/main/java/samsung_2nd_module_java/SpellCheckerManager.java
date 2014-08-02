@@ -18,7 +18,7 @@ public class SpellCheckerManager {
 //			dictionary = new SpellDictionaryHashMap(new File(
 //					"dictionary/english.txt"));
 			dictionary = new SpellDictionaryHashMap(new File(
-					"dictionary/english.0.txt"));
+					"resources/dictionary/english.0.txt"));
 
 		} catch (IOException e) {
 			e.printStackTrace();
