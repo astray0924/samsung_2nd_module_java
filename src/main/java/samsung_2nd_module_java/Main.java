@@ -14,7 +14,7 @@ public class Main {
 			extractor.extract();
 
 			// 결과값 수집
-			Map<String, Multiset<String>> np_context = extractor.getContexts();
+			Map<String, Multiset<String>> np_context = extractor.getCountContexts();
 			ImmutableSet<Entry<String>> tokens = extractor.getTokens();
 			ImmutableSet<Entry<String>> NPs = extractor.getNPs();
 
