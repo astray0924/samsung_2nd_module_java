@@ -19,7 +19,7 @@ public class Main {
 			ImmutableSet<Entry<String>> NPs = extractor.getNPs();
 
 			// 디버깅
-			System.out.println(NPs);
+			System.out.println(np_context);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
