@@ -1,21 +1,29 @@
 package samsung_2nd_module_java;
 
 import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import cc.mallet.types.Alphabet;
 import cc.mallet.types.FeatureVector;
+import cc.mallet.types.NormalizedDotProductMetric;
 
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableSet;
@@ -25,9 +33,9 @@ import com.google.common.collect.Multisets;
 
 public class FeatureExtractor {
 	private static final String DATA_DIR = "resources/data";
-	private static final String DATA_POS = "sample_pos_tagging.txt";
-	private static final String DATA_TARGET = "sample_senti_target.txt";
-	private static final String DATA_SENTI = "sample_sentiment.txt";
+	private static final String DATA_POS = "pos_tagging.txt";
+	// private static final String DATA_TARGET = "sample_senti_target.txt";
+	// private static final String DATA_SENTI = "sample_sentiment.txt";
 
 	// 정규표현식
 	private static final String SENT_PATTERN_STRING = "\\b(\\w+/NN\\s?)+\\w+/VB[PZ]? (\\w+/RB\\s)?\\w+/JJ(\\s*,/, (\\w+/RB\\s)?\\w+/JJ(\\s,/,)?)*(\\s\\w+/CC (\\w+/RB\\s)?\\w+/JJ)?\\s";
@@ -49,7 +57,7 @@ public class FeatureExtractor {
 	private Multiset<String> tokens = HashMultiset.create();
 	private Multiset<String> allNPs = HashMultiset.create();
 
-	// 벡터화
+	// 벡터화의 (중간) 결과물들
 	private Alphabet vocabulary = new Alphabet();
 	private Map<String, Multiset<String>> countContexts = new HashMap<String, Multiset<String>>();
 	private Map<String, HashMap<String, Double>> ppmiContexts = new HashMap<String, HashMap<String, Double>>();
@@ -138,14 +146,98 @@ public class FeatureExtractor {
 		}
 
 	}
-	
+
+	@SuppressWarnings("unchecked")
+	public void deserializeOutputs() throws ClassNotFoundException, IOException {
+		FileInputStream fis = null;
+		ObjectInputStream ois = null;
+		Path dir = Paths.get("output/serializables");
+
+		if (!Files.exists(dir)) {
+			throw new IllegalStateException("Serialized outputs aren't exist!");
+		}
+
+		// vocabulary
+		fis = new FileInputStream(dir.resolve("vocabulary.dat").toFile());
+		ois = new ObjectInputStream(fis);
+		vocabulary = (Alphabet) ois.readObject();
+		fis.close();
+
+		// countContext
+		fis = new FileInputStream(dir.resolve("countContexts.dat").toFile());
+		ois = new ObjectInputStream(fis);
+		countContexts = (HashMap<String, Multiset<String>>) ois.readObject();
+		fis.close();
+
+		// ppmiContexts
+		fis = new FileInputStream(dir.resolve("ppmiContexts.dat").toFile());
+		ois = new ObjectInputStream(fis);
+		ppmiContexts = (HashMap<String, HashMap<String, Double>>) ois
+				.readObject();
+		fis.close();
+
+		// vectors
+		fis = new FileInputStream(dir.resolve("vectors.dat").toFile());
+		ois = new ObjectInputStream(fis);
+		vectors = (HashMap<String, FeatureVector>) ois.readObject();
+		fis.close();
+	}
+
+	public void serializeOutputs() throws IOException {
+		FileOutputStream fos = null;
+		ObjectOutputStream oos = null;
+		Path dir = Paths.get("output/serializables");
+		if (!Files.isDirectory(dir)) {
+			Files.createDirectories(dir);
+		}
+
+		// vocabulary 저장
+		fos = new FileOutputStream(dir.resolve("vocabulary.dat").toFile());
+		oos = new ObjectOutputStream(fos);
+		oos.writeObject(vocabulary);
+		fos.close();
+
+		// countContexts 저장
+		fos = new FileOutputStream(dir.resolve("countContexts.dat").toFile());
+		oos = new ObjectOutputStream(fos);
+		oos.writeObject(countContexts);
+		fos.close();
+
+		// ppmiContexts 저장
+		fos = new FileOutputStream(dir.resolve("ppmiContexts.dat").toFile());
+		oos = new ObjectOutputStream(fos);
+		oos.writeObject(ppmiContexts);
+		fos.close();
+
+		// vectors 저장
+		fos = new FileOutputStream(dir.resolve("vectors.dat").toFile());
+		oos = new ObjectOutputStream(fos);
+		oos.writeObject(vectors);
+		fos.close();
+
+		// close the stream
+		oos.close();
+	}
+
 	public void debugClassification(String target) {
 		if (!vectors.containsKey(target)) {
 			throw new IllegalArgumentException("No such a target: " + target);
 		}
-		
+
+		// 유사도 계산
+		// TODO: 만약 두 target의 유사도가 같으면 덮어 씌워지는 문제가 있음
+		NormalizedDotProductMetric metric = new NormalizedDotProductMetric();
 		FeatureVector targetVector = vectors.get(target);
-		System.out.println(targetVector);
+		SortedMap<Double, String> sortedBySim = new TreeMap<Double, String>(Collections.reverseOrder());
+		for (String t : vectors.keySet()) {
+			FeatureVector otherVector = vectors.get(t);
+			double sim = 1 - metric.distance(targetVector, otherVector);
+			sortedBySim.put(sim, t);
+		}
+
+		for (Double t : sortedBySim.keySet()) {
+			System.out.printf("%s: %s\n", t, sortedBySim.get(t));
+		}
 	}
 
 	public void debug() {
