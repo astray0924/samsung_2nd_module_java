@@ -14,6 +14,8 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import cc.mallet.types.Alphabet;
+
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multiset;
@@ -42,10 +44,13 @@ public class FeatureExtractor {
 	private static final String NP_TAG_PATTERN = "(?i)/NN[PS]{0,2}";
 	private static final String JJ_TAG_PATTERN = "(?i)/JJ[RS]{0,1}";
 
-	// 결과물
+	// Feature 추출
 	private Multiset<String> tokens = HashMultiset.create();
 	private Multiset<String> allNP = HashMultiset.create();
 	private Map<String, Multiset<String>> np_context = new HashMap<String, Multiset<String>>();
+	
+	// Vectorize
+	private Alphabet vocabulary = new Alphabet();
 
 	public Map<String, Multiset<String>> getCountContexts() {
 		return np_context;
@@ -60,11 +65,20 @@ public class FeatureExtractor {
 	}
 
 	public void vectorize() {
+		// vocabulary 생성
+		vocabulary = new Alphabet();
+		for (java.util.Map.Entry<String, Multiset<String>> entry : np_context
+				.entrySet()) {
+			String np = entry.getKey();
+			Multiset<String> context = entry.getValue();
+
+			vocabulary.lookupIndices(context.toArray(), true);
+		}
+		
 		// 각 feature의 PPMI 값 계산
 		float normalizingComp = tokens.size();
 		
-		System.out.println(tokens);
-		System.out.println(normalizingComp);
+		
 
 		// 결과값 수집
 //		Map<String, Multiset<String>> np_context = extractor.getCountContexts();
