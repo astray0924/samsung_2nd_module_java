@@ -59,6 +59,45 @@ public class FeatureExtractor {
 		return Multisets.copyHighestCountFirst(allNP).entrySet();
 	}
 
+	public void vectorize() {
+		// 각 feature의 PPMI 값 계산
+		float normalizingComp = tokens.size();
+		
+		System.out.println(tokens);
+		System.out.println(normalizingComp);
+
+		// 결과값 수집
+//		Map<String, Multiset<String>> np_context = extractor.getCountContexts();
+//		ImmutableSet<Entry<String>> tokens = extractor.getTokens();
+//		ImmutableSet<Entry<String>> NPs = extractor.getNPs();
+
+		// 디버깅
+		// System.out.println(np_context);
+
+//		// 테스트
+//		Alphabet alphabet = new Alphabet();
+//		for (java.util.Map.Entry<String, Multiset<String>> entry : np_context
+//				.entrySet()) {
+//			String np = entry.getKey();
+//			Multiset<String> context = entry.getValue();
+//
+//			alphabet.lookupIndices(context.toArray(), true);
+//		}
+//
+//		// alphabet.dump();
+//		FeatureSequence seq = new FeatureSequence(alphabet);
+//		System.out.println(seq.getLength());
+
+		/**
+		 * dict는 vocabulary featureIndices는 이 벡터에 존재하는 feature의 목록 values는 계산된
+		 * PPMI 값
+		 */
+		// FeatureVector(Alphabet dict, int[] featureIndices, double[] values)
+		// Create non-binary vector, possibly dense if "featureIndices" or
+		// possibly sparse, if not
+
+	}
+
 	public void extract() throws IOException {
 		Path dir = Paths.get(DATA_DIR);
 		Path dataFile = dir.resolve(DATA_POS);
