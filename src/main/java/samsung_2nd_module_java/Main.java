@@ -8,6 +8,7 @@ public class Main {
 		try {
 			extractor.extract();
 			extractor.vectorize();
+			extractor.debug();
 
 		} catch (IOException e) {
 			e.printStackTrace();

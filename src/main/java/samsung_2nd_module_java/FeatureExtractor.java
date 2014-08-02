@@ -15,6 +15,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import cc.mallet.types.Alphabet;
+import cc.mallet.types.FeatureVector;
 
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableSet;
@@ -46,14 +47,18 @@ public class FeatureExtractor {
 
 	// Feature 추출
 	private Multiset<String> tokens = HashMultiset.create();
-	private Multiset<String> allNP = HashMultiset.create();
-	private Map<String, Multiset<String>> np_context = new HashMap<String, Multiset<String>>();
-	
+	private Multiset<String> allNPs = HashMultiset.create();
+
+	// 벡터들
+	private Map<String, Multiset<String>> countContexts = new HashMap<String, Multiset<String>>();
+	private Map<String, HashMap<String, Double>> ppmiContexts = new HashMap<String, HashMap<String, Double>>();
+	private Map<String, FeatureVector> vectors = new HashMap<String, FeatureVector>();
+
 	// Vectorize
 	private Alphabet vocabulary = new Alphabet();
 
 	public Map<String, Multiset<String>> getCountContexts() {
-		return np_context;
+		return countContexts;
 	}
 
 	public ImmutableSet<Entry<String>> getTokens() {
@@ -61,55 +66,87 @@ public class FeatureExtractor {
 	}
 
 	public ImmutableSet<Entry<String>> getNPs() {
-		return Multisets.copyHighestCountFirst(allNP).entrySet();
+		return Multisets.copyHighestCountFirst(allNPs).entrySet();
 	}
 
 	public void vectorize() {
-		// vocabulary 생성
+		// 형용사(context) vocabulary 생성
 		vocabulary = new Alphabet();
-		for (java.util.Map.Entry<String, Multiset<String>> entry : np_context
+		for (java.util.Map.Entry<String, Multiset<String>> entry : countContexts
 				.entrySet()) {
 			String np = entry.getKey();
 			Multiset<String> context = entry.getValue();
 
 			vocabulary.lookupIndices(context.toArray(), true);
 		}
-		
-		// 각 feature의 PPMI 값 계산
-		float normalizingComp = tokens.size();
-		
-		
+		vocabulary.stopGrowth();
 
-		// 결과값 수집
-//		Map<String, Multiset<String>> np_context = extractor.getCountContexts();
-//		ImmutableSet<Entry<String>> tokens = extractor.getTokens();
-//		ImmutableSet<Entry<String>> NPs = extractor.getNPs();
+		// 각 feature의 PPMI 값 계산하여 벡터 형태로 저장
+		double normalizingComp = tokens.size();
+		for (java.util.Map.Entry<String, Multiset<String>> entry : countContexts
+				.entrySet()) {
+			// p_n: text에서 해당 명사가 출현할 확률
+			String np = entry.getKey();
+			double p_n = tokens.count(np) / normalizingComp;
 
-		// 디버깅
-		// System.out.println(np_context);
+			// context를 구성하는 형용사들의 ppmi 값을 계산하여 맵 형태로 저장
+			HashMap<String, Double> ppmiContext = new HashMap<String, Double>();
+			String cxt = "";
+			double cxtCount = 0;
+			for (Entry<String> contextAndCount : entry.getValue().entrySet()) {
+				/*
+				 * cxt: 형용사 cxtCount: 형용사가 np와 함께 나타난 빈도
+				 */
+				cxt = contextAndCount.getElement();
+				cxtCount = contextAndCount.getCount();
 
-//		// 테스트
-//		Alphabet alphabet = new Alphabet();
-//		for (java.util.Map.Entry<String, Multiset<String>> entry : np_context
-//				.entrySet()) {
-//			String np = entry.getKey();
-//			Multiset<String> context = entry.getValue();
-//
-//			alphabet.lookupIndices(context.toArray(), true);
-//		}
-//
-//		// alphabet.dump();
-//		FeatureSequence seq = new FeatureSequence(alphabet);
-//		System.out.println(seq.getLength());
+				// p_a: text에서 해당 형용사가 출현할 확률
+				double p_a = tokens.count(cxt) / normalizingComp;
 
-		/**
-		 * dict는 vocabulary featureIndices는 이 벡터에 존재하는 feature의 목록 values는 계산된
-		 * PPMI 값
-		 */
-		// FeatureVector(Alphabet dict, int[] featureIndices, double[] values)
-		// Create non-binary vector, possibly dense if "featureIndices" or
-		// possibly sparse, if not
+				// p_na: text에서 해당 명사와 형용사가 동시에 출현할 확률
+				double p_na = cxtCount / normalizingComp;
 
+				// PMI: log( p_na / (p_n * p_a) )
+				double pmi = Math.log(p_na / (p_n * p_a));
+
+				// PPMI: 0 if PMI = 0 else PMI
+				double ppmi = (pmi < 0) ? 0 : pmi;
+
+				// 계산된 PPMI 값 저장
+				ppmiContext.put(cxt, ppmi);
+			}
+
+			ppmiContexts.put(np, ppmiContext);
+
+		}
+		// System.out.println(countContexts);
+		// System.out.println(ppmiContexts);
+		// System.out.println("");
+
+		// PPMI 벡터를 FeatureVector 형태로 변환
+		for (java.util.Map.Entry<String, HashMap<String, Double>> entry : ppmiContexts
+				.entrySet()) {
+			Map<String, Double> context = entry.getValue();
+			Object[] adjs = context.keySet().toArray();
+
+			int[] indices = new int[adjs.length];
+			double[] ppmis = new double[context.values().size()];
+			for (int i = 0; i < adjs.length; i++) {
+				Object adj = adjs[i];
+				indices[i] = vocabulary.lookupIndex(adj, false);
+				ppmis[i] = context.get(adj);
+			}
+
+			FeatureVector vector = new FeatureVector(vocabulary, indices, ppmis);
+			vectors.put(entry.getKey(), vector);
+		}
+
+	}
+
+	public void debug() {
+		 System.out.println(countContexts);
+		 System.out.println(ppmiContexts);
+		 System.out.println(vectors);
 	}
 
 	public void extract() throws IOException {
@@ -123,7 +160,6 @@ public class FeatureExtractor {
 				line = line.trim();
 
 				// 문장이 비어있지 않을 때에만 처리
-				// TODO: 소문자화, Stemming
 				if (!line.isEmpty()) {
 					Matcher sentMatcher = SENT_PATTERN.matcher(line);
 					while (sentMatcher.find()) {
@@ -143,7 +179,7 @@ public class FeatureExtractor {
 							// 저장
 							nps.add(np);
 						}
-						allNP.addAll(nps);
+						allNPs.addAll(nps);
 						tokens.addAll(nps);
 
 						// JJ 추출
@@ -169,21 +205,24 @@ public class FeatureExtractor {
 
 						// NP context 구축
 						for (String np : nps) {
-							if (np_context.containsKey(np)) {
-								Multiset<String> ctx = np_context.get(np);
+							if (countContexts.containsKey(np)) {
+								Multiset<String> ctx = countContexts.get(np);
 								Iterator<String> iter = jjs.iterator();
 								while (iter.hasNext()) {
 									ctx.add(iter.next());
 								}
 							} else {
-								np_context.put(np, jjs);
+								countContexts.put(np, jjs);
 							}
 						}
 					}
 				}
 
 				// 처리한 라인 개수 출력
-				System.out.println(++i);
+				++i;
+				if ((i % 1000) == 0) {
+					System.out.println(i);
+				}
 			}
 		}
 	}
