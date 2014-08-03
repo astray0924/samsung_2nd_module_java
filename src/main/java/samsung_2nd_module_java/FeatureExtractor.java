@@ -245,6 +245,15 @@ public class FeatureExtractor {
 		System.out.println(ppmiContexts);
 		System.out.println(vectors);
 	}
+	
+	// TODO: 명사구도 제대로 처리할까?
+	private String correctSpelling(String token) {
+		if (token.contains(" ")) {	// 두 단어 이상으로 이루어진 구일 경우
+			return token;
+		} else {
+			return SpellCheckerManager.getSuggestion(token);
+		}
+	}
 
 	public void extract() throws IOException {
 		Path dir = Paths.get(DATA_DIR);
@@ -271,7 +280,8 @@ public class FeatureExtractor {
 
 							// 언어적 처리
 							np = np.toLowerCase();
-							np = np.replaceAll("\\bthe\\b", "").trim();
+							np = np.replaceAll("\\bthe\\b", "").trim();	// 전치사 the 제거
+							np = correctSpelling(np);
 
 							// 저장
 							nps.add(np);
@@ -288,7 +298,7 @@ public class FeatureExtractor {
 
 							// 언어적 처리
 							jj = jj.toLowerCase();
-							jj = SpellCheckerManager.getSuggestion(jj);
+							jj = correctSpelling(jj);
 							Stemmer stemmer = new Stemmer();
 							stemmer.add(jj.toCharArray(), jj.length());
 							stemmer.stem();
