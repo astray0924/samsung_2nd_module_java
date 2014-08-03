@@ -1,4 +1,4 @@
-package samsung_2nd_module_java;
+package samsung_2nd_module_java.hierarchy;
 
 import java.io.File;
 import java.io.IOException;

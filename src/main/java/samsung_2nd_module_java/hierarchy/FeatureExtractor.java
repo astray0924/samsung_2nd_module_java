@@ -1,4 +1,4 @@
-package samsung_2nd_module_java;
+package samsung_2nd_module_java.hierarchy;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -33,10 +33,8 @@ import com.google.common.collect.Multisets;
 
 public class FeatureExtractor {
 	private static final String DATA_DIR = "resources/data";
-	private static final String DATA_POS = "pos_tagging.txt";
-	// private static final String DATA_TARGET = "sample_senti_target.txt";
-	// private static final String DATA_SENTI = "sample_sentiment.txt";
-
+	private static final String DATA_POS = "sample_pos_tagging.txt";
+	
 	// 정규표현식
 	private static final String SENT_PATTERN_STRING = "\\b(\\w+/NN\\s?)+\\w+/VB[PZ]? (\\w+/RB\\s)?\\w+/JJ(\\s*,/, (\\w+/RB\\s)?\\w+/JJ(\\s,/,)?)*(\\s\\w+/CC (\\w+/RB\\s)?\\w+/JJ)?\\s";
 	private static final Pattern SENT_PATTERN = Pattern
