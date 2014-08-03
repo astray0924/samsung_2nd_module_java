@@ -21,7 +21,7 @@ public class Main {
 			break;
 		case HIERARCHY:	// 타겟 구조 추정 모듈 
 			module = new HierarchyModuleRunner();
-			module.run();
+			module.run(args);
 			break;
 		default:
 			break;

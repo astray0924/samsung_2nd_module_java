@@ -7,7 +7,7 @@ import samsung_sentiment_module.SamsungModule;
 public class HierarchyModuleRunner implements SamsungModule {
 
 	@Override
-	public void run() {
+	public void run(String[] args) {
 		FeatureExtractor extractor = new FeatureExtractor();
 		try {
 			extractor.extract();
