@@ -1,4 +1,4 @@
-package samsung_2nd_module_java;
+package samsung_sentiment_module;
 
 public interface SamsungModule {
 	public void run();

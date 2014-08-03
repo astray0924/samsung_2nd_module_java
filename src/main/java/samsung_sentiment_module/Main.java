@@ -1,6 +1,6 @@
-package samsung_2nd_module_java;
+package samsung_sentiment_module;
 
-import samsung_2nd_module_java.hierarchy.HierarchyModuleRunner;
+import samsung_sentiment_module.hierarchy.HierarchyModuleRunner;
 
 public class Main {
 	private enum Mode {

@@ -1,8 +1,8 @@
-package samsung_2nd_module_java.hierarchy;
+package samsung_sentiment_module.hierarchy;
 
 import java.io.IOException;
 
-import samsung_2nd_module_java.SamsungModule;
+import samsung_sentiment_module.SamsungModule;
 
 public class HierarchyModuleRunner implements SamsungModule {
 

@@ -1,4 +1,4 @@
-package samsung_2nd_module_java.hierarchy;
+package samsung_sentiment_module.hierarchy;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
