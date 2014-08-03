@@ -11,9 +11,9 @@ public class HierarchyModuleRunner implements SamsungModule {
 		FeatureExtractor extractor = null;
 		try {
 			extractor = new FeatureExtractor();
-			 extractor.extract();
-			 extractor.vectorize();
-			 extractor.serializeOutputs();
+//			extractor.extract();
+//			extractor.vectorize();
+//			extractor.serializeOutputs();
 			extractor.deserializeOutputs();
 		} catch (IOException e1) {
 			e1.printStackTrace();

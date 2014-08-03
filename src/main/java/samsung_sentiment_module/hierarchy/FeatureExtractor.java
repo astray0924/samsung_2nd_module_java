@@ -16,8 +16,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -27,9 +25,12 @@ import cc.mallet.types.NormalizedDotProductMetric;
 
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Multiset.Entry;
 import com.google.common.collect.Multisets;
+import com.google.common.collect.Ordering;
+import com.google.common.collect.TreeMultimap;
 
 public class FeatureExtractor {
 	private static final String DATA_DIR = "resources/data";
@@ -235,17 +236,17 @@ public class FeatureExtractor {
 		oos.close();
 	}
 
-	public void debugClassification(String target) {
-		if (!vectors.containsKey(target)) {
-			throw new IllegalArgumentException("No such a target: " + target);
+	public void debugClassification(String centroid) {
+		if (!vectors.containsKey(centroid)) {
+			throw new IllegalArgumentException("No such a target: " + centroid);
 		}
 
 		// 유사도 계산
 		// TODO: 만약 두 target의 유사도가 같으면 덮어 씌워지는 문제가 있음
 		NormalizedDotProductMetric metric = new NormalizedDotProductMetric();
-		FeatureVector targetVector = vectors.get(target);
-		SortedMap<Double, String> sortedBySim = new TreeMap<Double, String>(
-				Collections.reverseOrder());
+		FeatureVector targetVector = vectors.get(centroid);
+		Multimap<Double, String> sortedBySim = TreeMultimap.create(Ordering
+				.natural().reverse(), Ordering.natural());
 		for (String t : vectors.keySet()) {
 			FeatureVector otherVector = vectors.get(t);
 			double sim = 1 - metric.distance(targetVector, otherVector);
@@ -263,11 +264,11 @@ public class FeatureExtractor {
 		System.out.println(vectors);
 	}
 
-	// TODO: 명사구도 제대로 처리할까?
 	public String sanitize(String token) {
 		String sanitizedToken = token;
 
-		if (token.contains(" ") || token.contains("\t")) { // 두 단어 이상으로 이루어진 구일 경우
+		if (token.contains(" ") || token.contains("\t")) { // 두 단어 이상으로 이루어진 구일
+															// 경우
 			StringBuilder sBuilder = new StringBuilder();
 			String[] tokens = token.split("\\W+");
 
@@ -277,7 +278,7 @@ public class FeatureExtractor {
 					sBuilder.append(sanitize(t));
 				}
 			}
-			
+
 			sanitizedToken = sBuilder.toString();
 
 		} else {
