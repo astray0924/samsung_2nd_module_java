@@ -10,7 +10,7 @@ public class Main {
 
 	public static void main(String[] args) throws ClassNotFoundException {
 		// 옵션 파싱하여 실행 모듈 및 input 파악
-		Module mode = Module.TARGET;
+		Module mode = Module.HIERARCHY;
 
 		// switch 문으로 실행할 모듈 선택
 		SamsungModule module = null;

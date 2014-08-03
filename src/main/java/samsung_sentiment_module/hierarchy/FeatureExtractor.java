@@ -238,11 +238,11 @@ public class FeatureExtractor {
 
 	public void debugClassification(String centroid) {
 		if (!vectors.containsKey(centroid)) {
-			throw new IllegalArgumentException("No such a target: " + centroid);
+			throw new IllegalArgumentException(
+					"Centroid is invalid (no such a target: " + centroid + ")");
 		}
 
 		// 유사도 계산
-		// TODO: 만약 두 target의 유사도가 같으면 덮어 씌워지는 문제가 있음
 		NormalizedDotProductMetric metric = new NormalizedDotProductMetric();
 		FeatureVector targetVector = vectors.get(centroid);
 		Multimap<Double, String> sortedBySim = TreeMultimap.create(Ordering
@@ -250,11 +250,16 @@ public class FeatureExtractor {
 		for (String t : vectors.keySet()) {
 			FeatureVector otherVector = vectors.get(t);
 			double sim = 1 - metric.distance(targetVector, otherVector);
-			sortedBySim.put(sim, t);
+			if (!t.isEmpty() && sim != Double.NaN) {
+				sortedBySim.put(sim, t);
+			}
 		}
 
+		// 출력
 		for (Double t : sortedBySim.keySet()) {
-			System.out.printf("%s: %s\n", t, sortedBySim.get(t));
+			if (t >= 0.05) {
+				System.out.printf("%s: %s\n", t, sortedBySim.get(t));
+			}
 		}
 	}
 

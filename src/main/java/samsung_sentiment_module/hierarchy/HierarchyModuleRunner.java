@@ -21,7 +21,7 @@ public class HierarchyModuleRunner implements SamsungModule {
 			e.printStackTrace();
 		}
 
-		extractor.debugClassification("location");
+		extractor.debugClassification("restaurant");
 
 	}
 
