@@ -33,8 +33,9 @@ import com.google.common.collect.Multisets;
 
 public class FeatureExtractor {
 	private static final String DATA_DIR = "resources/data";
-	private static final String DATA_POS = "sample_pos_tagging.txt";
-	
+	private static final String DIC_DIR = "resources/dictionary";
+	private static final String DATA_POS = "pos_tagging.txt";
+
 	// 정규표현식
 	private static final String SENT_PATTERN_STRING = "\\b(\\w+/NN\\s?)+\\w+/VB[PZ]? (\\w+/RB\\s)?\\w+/JJ(\\s*,/, (\\w+/RB\\s)?\\w+/JJ(\\s,/,)?)*(\\s\\w+/CC (\\w+/RB\\s)?\\w+/JJ)?\\s";
 	private static final Pattern SENT_PATTERN = Pattern
@@ -51,6 +52,9 @@ public class FeatureExtractor {
 	private static final String NP_TAG_PATTERN = "(?i)/NN[PS]{0,2}";
 	private static final String JJ_TAG_PATTERN = "(?i)/JJ[RS]{0,1}";
 
+	// stopwords
+	private Set<String> stopwords = new HashSet<String>();
+
 	// Feature 추출
 	private Multiset<String> tokens = HashMultiset.create();
 	private Multiset<String> allNPs = HashMultiset.create();
@@ -60,6 +64,20 @@ public class FeatureExtractor {
 	private Map<String, Multiset<String>> countContexts = new HashMap<String, Multiset<String>>();
 	private Map<String, HashMap<String, Double>> ppmiContexts = new HashMap<String, HashMap<String, Double>>();
 	private Map<String, FeatureVector> vectors = new HashMap<String, FeatureVector>();
+
+	public FeatureExtractor() throws IOException {
+		// populate stopwords
+		Path stopFile = Paths.get(DIC_DIR).resolve("stopwords.txt");
+		try (BufferedReader reader = Files.newBufferedReader(stopFile,
+				StandardCharsets.UTF_8)) {
+			String line = "";
+
+			while ((line = reader.readLine()) != null) {
+				String stopWord = line.trim();
+				stopwords.add(stopWord);
+			}
+		}
+	}
 
 	public Map<String, Multiset<String>> getCountContexts() {
 		return countContexts;
@@ -226,7 +244,8 @@ public class FeatureExtractor {
 		// TODO: 만약 두 target의 유사도가 같으면 덮어 씌워지는 문제가 있음
 		NormalizedDotProductMetric metric = new NormalizedDotProductMetric();
 		FeatureVector targetVector = vectors.get(target);
-		SortedMap<Double, String> sortedBySim = new TreeMap<Double, String>(Collections.reverseOrder());
+		SortedMap<Double, String> sortedBySim = new TreeMap<Double, String>(
+				Collections.reverseOrder());
 		for (String t : vectors.keySet()) {
 			FeatureVector otherVector = vectors.get(t);
 			double sim = 1 - metric.distance(targetVector, otherVector);
@@ -243,14 +262,35 @@ public class FeatureExtractor {
 		System.out.println(ppmiContexts);
 		System.out.println(vectors);
 	}
-	
+
 	// TODO: 명사구도 제대로 처리할까?
-	private String correctSpelling(String token) {
-		if (token.contains(" ")) {	// 두 단어 이상으로 이루어진 구일 경우
-			return token;
+	public String sanitize(String token) {
+		String sanitizedToken = token;
+
+		if (token.contains(" ") || token.contains("\t")) { // 두 단어 이상으로 이루어진 구일 경우
+			StringBuilder sBuilder = new StringBuilder();
+			String[] tokens = token.split("\\W+");
+
+			for (String t : tokens) {
+				if (!stopwords.contains(t)) {
+					sBuilder.append(" ");
+					sBuilder.append(sanitize(t));
+				}
+			}
+			
+			sanitizedToken = sBuilder.toString();
+
 		} else {
-			return SpellCheckerManager.getSuggestion(token);
+			try {
+				sanitizedToken = SpellCheckerManager.getSuggestion(token);
+			} catch (NegativeArraySizeException e) {
+				e.printStackTrace();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
+
+		return sanitizedToken.trim().toLowerCase();
 	}
 
 	public void extract() throws IOException {
@@ -278,8 +318,10 @@ public class FeatureExtractor {
 
 							// 언어적 처리
 							np = np.toLowerCase();
-							np = np.replaceAll("\\bthe\\b", "").trim();	// 전치사 the 제거
-							np = correctSpelling(np);
+							np = np.replaceAll("\\bthe\\b", "").trim(); // 전치사
+																		// the
+																		// 제거
+							np = sanitize(np);
 
 							// 저장
 							nps.add(np);
@@ -296,7 +338,7 @@ public class FeatureExtractor {
 
 							// 언어적 처리
 							jj = jj.toLowerCase();
-							jj = correctSpelling(jj);
+							jj = sanitize(jj);
 							Stemmer stemmer = new Stemmer();
 							stemmer.add(jj.toCharArray(), jj.length());
 							stemmer.stem();
