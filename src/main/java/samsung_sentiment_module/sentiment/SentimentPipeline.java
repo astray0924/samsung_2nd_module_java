@@ -77,8 +77,8 @@ public class SentimentPipeline implements ModuleRunner {
 	private static final NumberFormat NF = new DecimalFormat("0.0000");
 
 	private static List<String> targetList = new ArrayList<String>();
-	private final static String posPath =  "./temp/" + "tagged.pos";
-	
+	private final static String posPath = "./temp/" + "tagged.pos";
+
 	static LexicalizedParser parser;
 	static StanfordCoreNLP pipeline;
 	static Tagger_IRNLP irnlp;
@@ -175,7 +175,6 @@ public class SentimentPipeline implements ModuleRunner {
 			return index;
 		}
 
-
 		index++;
 		for (Tree child : tree.children()) {
 			index = outputTreeVectors(out, child, index);
@@ -197,7 +196,6 @@ public class SentimentPipeline implements ModuleRunner {
 
 		for (int i = 0; i < vector.getNumElements(); ++i) {
 			out.print("  " + NF.format(vector.get(i)));
-
 
 		}
 		out.println();
@@ -347,7 +345,6 @@ public class SentimentPipeline implements ModuleRunner {
 	public static void parsing_sentence(String textDoc, String outputFileName,
 			StringBuffer sb, boolean threeClass) throws IOException {
 
-		
 		String regex = "(<sentence)(.+?)(</sentence>)"; // <S> ~ </S>
 
 		Pattern p = Pattern.compile(regex, Pattern.CASE_INSENSITIVE
@@ -419,15 +416,14 @@ public class SentimentPipeline implements ModuleRunner {
 		String line = s;
 		String result = "";
 		if (line.length() > 0) {
-			
-			
+
 			Annotation annotation = pipeline.process(line);
-			
-			
+
 			int numSen = 0;
 			int adjNumOfFirst = 0;
 			StringBuilder stb = new StringBuilder();
-			for (CoreMap sentence : annotation.get(CoreAnnotations.SentencesAnnotation.class)) {
+			for (CoreMap sentence : annotation
+					.get(CoreAnnotations.SentencesAnnotation.class)) {
 				if (numSen == 0) {
 					for (int k = 0; k < adj_list.size(); k++) {
 						String adj = adj_list.get(k);
@@ -437,9 +433,8 @@ public class SentimentPipeline implements ModuleRunner {
 				}
 				numSen++;
 			}
-			
-			
-			if (numSen > 1) //exception handling
+
+			if (numSen > 1) // exception handling
 				return 1;
 
 			// dependency parser loading
@@ -495,7 +490,7 @@ public class SentimentPipeline implements ModuleRunner {
 					int sub_end = result.indexOf(adj, start);
 
 					if (sub_end == -1) {
-						 System.out.println("failed search for " + adj);
+						System.out.println("failed search for " + adj);
 					} else {
 						String senti = result.substring(sub_end - 2,
 								sub_end - 1);
@@ -671,14 +666,12 @@ public class SentimentPipeline implements ModuleRunner {
 					outputFileName)); // output directory
 			sb.append("{\"document\":["); // document 배열 시작
 
-
 			BufferedReader input = new BufferedReader(new InputStreamReader(
 					new FileInputStream(file), "UTF-8"));
 
+			String taggedDoc = irnlp.tagger(file.getCanonicalPath());
 
-			String taggedDoc = irnlp.tagger(file.getCanonicalPath()); 
-			
-			//temp 파일 없으면 생성
+			// temp 파일 없으면 생성
 			Path outputPath = null;
 			try {
 				outputPath = Paths.get("temp");
@@ -693,29 +686,29 @@ public class SentimentPipeline implements ModuleRunner {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			
-			
+
 			/* pos tagging, module 3에 전달 */
 			String t = Tagger_IRNLP.tagger2(file.getCanonicalPath());
 			Annotation annotation = pipeline.process(t);
-			
+
 			StringBuilder stb = new StringBuilder();
-			for (CoreMap sentence : annotation.get(CoreAnnotations.SentencesAnnotation.class)) {
-				for(CoreLabel token: sentence.get(TokensAnnotation.class)){
-					
-			        String word = token.get(TextAnnotation.class);
+			for (CoreMap sentence : annotation
+					.get(CoreAnnotations.SentencesAnnotation.class)) {
+				for (CoreLabel token : sentence.get(TokensAnnotation.class)) {
+
+					String word = token.get(TextAnnotation.class);
 					String pos = token.get(PartOfSpeechAnnotation.class);
-					stb.append(word+"/"+pos+" ");
+					stb.append(word + "/" + pos + " ");
 				}
 				stb.append("\n");
 			}
-//			System.out.println("test");
-//			System.out.println(stb.toString());
-			
-			BufferedWriter outputPOS = new BufferedWriter(new FileWriter(posPath));
+			// System.out.println("test");
+			// System.out.println(stb.toString());
+
+			BufferedWriter outputPOS = new BufferedWriter(new FileWriter(
+					posPath));
 			outputPOS.write(stb.toString());
 			outputPOS.close();
-
 
 			String fileName = "\"" + file.getName() + "\""; // file path value
 			sb.append("{\"file name\":" + fileName); // file path 객체 시작
@@ -787,15 +780,14 @@ public class SentimentPipeline implements ModuleRunner {
 			doc += TxtReader.readFile(f.getCanonicalPath());
 		}
 
-
 		for (int i = 0; i < targetList.size(); i++) {
 			int freq = doc.split(targetList.get(i)).length - 1;
 			sb.append(targetList.get(i) + "\t" + freq + "\n");
 
 		}
 
-		
-		BufferedWriter output = new BufferedWriter(new FileWriter(outputDirPath+"/targetlist"));
+		BufferedWriter output = new BufferedWriter(new FileWriter(outputDirPath
+				+ "/targetlist"));
 
 		output.write(sb.toString());
 		output.close();
@@ -836,7 +828,6 @@ public class SentimentPipeline implements ModuleRunner {
 
 			BufferedReader input = new BufferedReader(new InputStreamReader(
 					new FileInputStream(file), "UTF-8"));
-
 
 			String taggedDoc = irnlp.tagger(file.getCanonicalPath()); // file 의
 																		// path를
@@ -939,14 +930,14 @@ public class SentimentPipeline implements ModuleRunner {
 		String fineGrained = parsedArgs.getString("fineGrained");
 
 		boolean threeClass = true;
-		if(fineGrained==null)
+		if (fineGrained == null)
 			threeClass = true;
-		else if(fineGrained.contains("Y"))
+		else if (fineGrained.contains("Y"))
 			threeClass = false;
 
 		try {
 			senti(inputDirPath, outputDirPath, threeClass);
-			targetListWrite("temp");
+			// targetListWrite("temp");
 		} catch (ClassNotFoundException | IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
