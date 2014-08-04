@@ -25,6 +25,20 @@ public class fileIO {
 		return files;
 	}
 	
+	public static List<File> addPosFile(String dirName) {
+		File root = new File(dirName);
+		List<File> files = new ArrayList<File>();
+		for (File child : root.listFiles()) {
+			if (child.isFile() && child.getName().endsWith(".pos")) {
+				files.add(child); 
+			}/* 	
+			if (child.isFile() ) {
+				files.add(child); 
+			} */
+		}
+		return files;
+	}
+	
 	public static void writeFile(String outputString, String outputFileName) {
 		try {
 

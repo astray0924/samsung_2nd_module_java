@@ -1,7 +1,10 @@
 package samsung_sentiment_module.targetlist;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -9,17 +12,24 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
+
+import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 
 public class Main {
 	public static void main(String[] args) throws IOException{
 		
-		senti("-targetlist", "reviewdata", "result", "productFileName" , 0.706, 0.80);
+		target("reviewdata", "result", "camera_Canon_G3(test)" ,"domainFile.txt" ,0.506, 0.80);
 	}
 
-	public static void senti(String mode, String inputDirPath, String outputDirPath, String productFileName ,double pmi, double co_occurrence) throws IOException{
+	public static void target(String inputDirPath, String outputDirPath, String productFileName, String domainFilePath, double pmi, double co_occurrence) throws IOException{
 		// TODO Auto-generated method stub
 
+		StanfordCoreNLP pipeline = getPipeline();
+		
 		String dirName = inputDirPath;
+
+		int NumOfDomain = 4; // 총 도메인 수
 		
 		fileIO io = new fileIO();
 		List<File> productFileList = io.addTxtFile(dirName);
@@ -29,12 +39,25 @@ public class Main {
 	    String outputFileName = outputDirPath +"/"+ productFileName;
 		BufferedWriter output = new BufferedWriter(new FileWriter(outputFileName)); //output directory	
 
-		
 		String domainEntity[] = new String[numOfProduct];
-		double[] camera = new double[numOfProduct];
-		double[] mp3 = new double[numOfProduct];
-		double[] phone = new double[numOfProduct];
-		double[] router = new double[numOfProduct];
+		String domainList[]  = readDomainFile(domainFilePath);
+		NumOfDomain = domainList.length;
+		String targetDomain = "";
+		
+		double[][] dv = new double[NumOfDomain][];
+		
+		for(int i = 0 ; i < NumOfDomain; i++){
+			dv[i] = new double[numOfProduct];
+			
+		}
+		//matching domain string to number 
+		HashMap<String, Integer> domainToNum = new HashMap<String, Integer>();
+		for( int i = 0 ; i < NumOfDomain; i++){
+			if(!domainToNum.containsKey(domainList[i]))
+				domainToNum.put(domainList[i], i);
+		}
+		
+		
 		double[] temp  = new double[numOfProduct];
 
 		
@@ -47,71 +70,53 @@ public class Main {
 			try {
 				
 				//review is seperated for tfidf
-				
 				for(int i = 0; i < productFileList.size() ; i++)
 				{
 					//if( i != 4 ) // SD500과 Ipod 는 리뷰 구분이 안되있는 문서라서 일단 배제
 						allDoc += TxtReader.readFileToReview(productFileList.get(i).getPath(),domainEntity, i);
-					System.out.println(domainEntity[i]);
+					//System.out.println(domainEntity[i]);
 				}
-				//System.exit(0);
 
 				
 				String[] Review = allDoc.split("\\[t\\]");
 
-				
-
-				
+	
 				
 				ArrayList<wordINFO> nounList = new ArrayList<wordINFO>();
 				for(int i = 0; i < productFileList.size() ; i++){
 					
 					/*
-					 * 
 					 *  평가할 테스트 파일 선택
-					 * 
 					 * */
-					
-					if(  i == 7 ) //domain i 만 성능펴가 하기 위함
-						Tagger_IRNLP.tagger(productFileList.get(i).getPath(), i, nounList); 
+					int targetN = -1;
+					if( productFileList.get(i).getName().contains(productFileName) ){ //domain i 만 성능펴가 하기 위함
+						Tagger_IRNLP irnlp = new Tagger_IRNLP();
+						irnlp.tagger(productFileList.get(i).getPath(), i, nounList, pipeline); 
+						targetN = i;			
+					}
 					
 					text[i] = TxtReader.readFile2(productFileList.get(i).getPath());
+
+					for(int j = 0 ; j < NumOfDomain; j++)
+						dv[j][i] = computePMI.pmiScore(text[i], domainList[j], domainEntity[i], Review);
 					
-					camera[i] = computePMI.pmiScore(text[i], "camera", domainEntity[i], Review);
-					mp3[i] = computePMI.pmiScore(text[i], "mp3", domainEntity[i], Review);
-					phone[i] = computePMI.pmiScore(text[i], "phone", domainEntity[i], Review);
-					router[i] = computePMI.pmiScore(text[i], "router", domainEntity[i], Review);
+					if(targetN == i	)
+						targetDomain = domainEntity[i];
+				}		
+				coOccurOpinion.txtToSenti(text, pipeline);
+				
+				System.out.println("input target domain : "+ targetDomain);
 							
-				}			
-					
+//				phone[3] = 0.4;
+//				phone[6] += 2;
+//				phone[7] += 2;
 				
-				/* test */
-				
-				
-				// print domain vector 
-//				for(int i = 0 ; i <productFileList.size() ;i++ )
-//					System.out.print(camera[i]+" ");
-//				System.out.println();
-//				for(int i = 0 ; i <productFileList
-//						.size() ;i++ )
-//					System.out.print(mp3[i]+" ");
-//				System.out.println();
-//				for(int i = 0 ; i <productFileList.size() ;i++ )
-//					System.out.print(phone[i]+" ");
-//				System.out.println();
-//				for(int i = 0 ; i <productFileList.size() ;i++ )
-//					System.out.print(router[i]+" ");
-//				System.out.println();	
-				
-				phone[3] = 0.4;
-				phone[6] += 2;
-				phone[7] += 2;
 				
 				
 				
 				StringBuilder sb = new StringBuilder();
 				
-				coOccurOpinion.co_occur();
+				//coOccurOpinion.co_occur();
 				
 				Map<String, String> map = new HashMap<String, String>();
 				 
@@ -135,32 +140,26 @@ public class Main {
 						// 카메라 벡터와만 비교 (카메라 리뷰만 성능 평가 시)
 
 						a.setPmiScore(temp.clone());
-						a.setSimilairty(camera,mp3,phone,router);
+						a.setSimilairty(dv);
 						
 						// 1 평가시 도메인 단어 바꿔야됨
-						if( a.pmiVectorSimilarity(phone) > pmi){
+						if( a.pmiVectorSimilarity(dv[domainToNum.get(targetDomain)]) > pmi && coOccurOpinion.probOfSenti(a.word) > co_occurrence ){  //phone -> target 파일의 도메인을 domain list 번호로 매치해서
 							
 							jsonResult.append("{\"opinion target\":\"" + a.word + "\"},");
 							
-//							System.out.println(a);
-//							a.printVector(a.getPmiScore());
-//							System.out.println("similarity is : " + a.pmiVectorSimilarity(camera) );
-//							System.out.println();
 							totalPrintWords++;
 							
 							sb.append("\n");
 							sb.append(a);
 							sb.append("\n");
 							
-							// 2 평가시 도메인 단어 바꿔야됨
-							sb.append(a.pmiVectorSimilarity(phone)+"  " + coOccurOpinion.probOfSenti(a.word));
-							//System.out.println(coOccurOpinion.probOfSenti(":: probOfSenti :: " + a.word));
+							// 뽑혀진 단어마다 스코어 체크용
+							//sb.append(a.pmiVectorSimilarity(dv[domainToNum.get(targetDomain)])+"  " + coOccurOpinion.probOfSenti(a.word));
 							sb.append("\n");
 							sb.append("\n");
 						}
 					}
 				}
-				//System.out.println(jsonResult.substring( 0, jsonResult.length()-1));
 
 				System.out.println(jsonResult.substring( 0, jsonResult.length()-1)+"]}}");
 				System.out.println(totalPrintWords);
@@ -171,6 +170,57 @@ public class Main {
 				e.printStackTrace();
 			}	
 			output.close();
+	}
+  static enum Output {
+	    PENNTREES, VECTORS, ROOT, PROBABILITIES
+	  }
+
+	  static enum Input {
+	    TEXT, TREES
+	  }
+	  
+	private static String[] readDomainFile(String domainFilePath) throws IOException{
+		
+		int numOfDomain =0;
+		
+		BufferedReader reader = new BufferedReader(new FileReader(domainFilePath));
+		String line = null;
+		StringBuilder stringBuilder = new StringBuilder();
+		String ls = System.getProperty("line.separator");
+
+		line = reader.readLine();
+		
+		numOfDomain = Integer.parseInt(line.trim());
+		String[] domainList = new String[numOfDomain];
+		for(int i = 0 ; i < numOfDomain ; i++){
+			domainList[i] = reader.readLine();
+		}
+		return domainList;
+		
+	}
+	private static StanfordCoreNLP getPipeline(){
+		
+		
+	    boolean stdin = false;
+	    List<Output> outputFormats = Arrays.asList(new Output[] { Output.PROBABILITIES});
+	    Input inputFormat = Input.TEXT;
+
+
+	    Properties props = new Properties();
+
+	    if (stdin) {
+	      props.setProperty("ssplit.eolonly", "true");
+	    }
+	    if (inputFormat == Input.TREES) {
+	      props.setProperty("annotators", "sentiment");
+	      props.setProperty("enforceRequirements", "false");
+	    } else {
+	      props.setProperty("annotators", "tokenize, ssplit, parse, sentiment");
+	    }
+	    
+	    StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
+	    
+	    return pipeline;
 	}
 	
 

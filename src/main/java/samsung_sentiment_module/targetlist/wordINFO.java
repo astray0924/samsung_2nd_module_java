@@ -54,13 +54,13 @@ public class wordINFO {
 	}
 	
 	
-	public void setSimilairty(double[] a, double[] b, double[] c, double[] d) {
-		double[] si =  new double[4];
+	public void setSimilairty(double[][] a) {
+		double[] si =  new double[a.length];
 		
-		si[0] = pmiVectorSimilarity(a);
-		si[1] = pmiVectorSimilarity(b);
-		si[2] = pmiVectorSimilarity(c);
-		si[3] = pmiVectorSimilarity(d);		
+		for(int i = 0 ; i < a.length ; i++){
+			si[i] = pmiVectorSimilarity(a[i]);	
+		}
+			
 		
 		this.similarity = si;		
 	}
