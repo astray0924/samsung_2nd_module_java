@@ -14,12 +14,29 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import net.sourceforge.argparse4j.inf.Namespace;
+import samsung_sentiment_module.abs.ModuleRunner;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 
-public class Main {
-	public static void main(String[] args) throws IOException{
+public class targetModuleRunner implements ModuleRunner {
+	
+	public void run(String[] args, Namespace parsedArgs){
 		
-		target("reviewdata", "result", "camera_Canon_G3(test)" ,"domainFile.txt" ,0.506, 0.80);
+		String inputDirPath = parsedArgs.getString("corpusDirPath");
+		String outputDirPath = parsedArgs.getString("outputDirPath");
+		String inputFilePath = parsedArgs.getString("inputFilePath");
+		String domainFilePath = parsedArgs.getString("domainFilePath");
+		String pmiThreshold = parsedArgs.getString("pmiThreshold");
+		String coThreshold = parsedArgs.getString("coThreshold");
+		
+		
+		
+		try {
+			target(inputDirPath, outputDirPath, inputFilePath , domainFilePath ,Double.parseDouble(pmiThreshold), Double.parseDouble(coThreshold));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	public static void target(String inputDirPath, String outputDirPath, String productFileName, String domainFilePath, double pmi, double co_occurrence) throws IOException{

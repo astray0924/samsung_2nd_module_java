@@ -29,6 +29,7 @@ import net.sourceforge.argparse4j.inf.Namespace;
 import org.ejml.simple.SimpleMatrix;
 
 import samsung_sentiment_module.abs.ModuleRunner;
+import samsung_sentiment_module.hierarchy.FeatureExtractor;
 import edu.stanford.nlp.io.IOUtils;
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
@@ -189,7 +190,6 @@ public class SentimentPipeline implements ModuleRunner {
 		for (int i = 0; i < vector.getNumElements(); ++i) {
 			out.print("  " + NF.format(vector.get(i)));
 
-			// System.out.println(" "+Float.parseFloat(NF.format(vector.get(i))));
 
 		}
 		out.println();
@@ -207,8 +207,6 @@ public class SentimentPipeline implements ModuleRunner {
 			return index;
 		}
 
-		// out.print("index : " + index + ":");
-		// System.out.println(num);
 		SimpleMatrix vector = RNNCoreAnnotations.getPredictions(tree);
 
 		if (index == num) {
@@ -370,7 +368,6 @@ public class SentimentPipeline implements ModuleRunner {
 				if (a.contains("\"JJ")) {
 					a = a.replaceAll("<[^>]*>", "");
 					a = a.trim();
-					// System.out.println("adj : " + a);
 					adj_list.add(a);
 					adjMap.put(a, index);
 				} else if (a.contains("\"NN")) {
@@ -388,10 +385,6 @@ public class SentimentPipeline implements ModuleRunner {
 			g = g.replaceAll("   ", " ");
 			g = g.trim();
 
-			// String st[] = g.split(" "); // <W c="tag">~</W> 각각 저장됨
-
-			// System.out.println(st[0]);
-			// System.out.println(g.length());
 
 			int non = 0;
 			non = treeBank(g, adj_list, adjMap, nnMap, outputFileName, sb,
@@ -449,16 +442,12 @@ public class SentimentPipeline implements ModuleRunner {
 					.get(CoreAnnotations.SentencesAnnotation.class)) {
 
 				Tree parseTree = parser.parse(sentence.toString());
-				// System.out.println(printTree(parseTree,
-				// "typedDependencies"));
-				System.out.println();
-				System.out.println();
-				System.out.println();
-				System.out.println("input sentence : " + sentence.toString());
+
+				//System.out.println("input sentence : " + sentence.toString());
 				Tree t = outputLabelTree(System.out, sentence, outputFormats);
 
 				result = t.toString();
-				System.out.println("result :: " + result);
+				//System.out.println("result :: " + result);
 				// outputTree(System.out, sentence, outputFormats);
 
 				String sentPolarity = result.substring(1, 2);
@@ -949,106 +938,21 @@ public class SentimentPipeline implements ModuleRunner {
 
 	public void run(String[] args, Namespace parsedArgs) {
 
-		boolean moduleOption = false;
-		boolean threeClass = false;
-		String outputDirPath = "";
-		String inputDirPath = "";
+		String inputDirPath = parsedArgs.getString("inputDirPath");
+		String outputDirPath = parsedArgs.getString("outputDirPath");
+		String fineGrained = parsedArgs.getString("fineGrained");
 
-		if (args.length < 1) {
-			System.out
-					.println("Invald format!\ndefine <property file> or <sentiment result option> <Input Directory Path> <Output Directory Path> (option)-threeClass");
-			System.exit(0);
-		} else if (args.length == 1) {
+		boolean threeClass = true;
+		if(fineGrained==null)
+			threeClass = true;
+		else if(fineGrained.contains("fine"))
+			threeClass = false;
 
-			// if -sentence option 일 경우!
-			File p = new File(args[0]);
-			if (!p.exists()) {
-
-				System.out
-						.println("Invald format!\ndefine <property file> or <sentiment result option> <Input Directory Path> <Output Directory Path> (option)-threeClass");
-				System.exit(0);
-			}
-			try {
-				senti(args[0]);
-			} catch (ClassNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		} else {
-			for (int argIndex = 0; argIndex < args.length; argIndex++) {
-				if (args[argIndex].equalsIgnoreCase("-threeClass")) {
-					if (args.length == 2) {
-						System.out
-								.println("Invald format!\njava -jar review_senti_module.jar <sentiment result option> <Input Directory Path> <Output Directory Path> (option)-threeClass");
-						System.exit(0);
-					}
-					threeClass = true;
-				}
-				if (args[argIndex].equalsIgnoreCase("-sentence")) {
-					if (args.length == 2) {
-						System.out
-								.println("Invald format!\njava -jar review_senti_module.jar <sentiment result option> <Input Directory Path> <Output Directory Path> (option)-threeClass");
-						System.exit(0);
-					}
-					moduleOption = true;
-				}
-			}
-
-			inputDirPath = args[1];
-			outputDirPath = args[2];
-
-			File inputD = new File(inputDirPath);
-			File outputD = new File(outputDirPath);
-			if (!inputD.exists()) {
-				System.out
-						.println("Wrong input directory!\njava -jar review_senti_module.jar <sentiment result option> <Input Directory Path> <Output Directory Path> (option)-threeClass");
-				System.exit(0);
-			}
-			if (!outputD.exists()) {
-				if (!outputD.mkdir()) {
-					System.out
-							.println("Wrong output directory!\njava -jar review_senti_module.jar <sentiment result option> <Input Directory Path> <Output Directory Path> (option)-threeClass");
-					System.exit(0);
-				}
-			}
-			if (moduleOption == true)
-				try {
-					senti(inputDirPath, outputDirPath, threeClass);
-					targetListWrite(outputDirPath);
-				} catch (ClassNotFoundException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			else {
-				System.out.println(args[4]);
-				if (args[4] == null || args[5] == null) {
-					System.out.println("Wrong score parameter!\n ");
-					System.exit(0);
-				} else if (Double.parseDouble(args[4]) > 1
-						|| Double.parseDouble(args[5]) > 1) {
-					System.out
-							.println("Wrong score parameter! <pmi> and <co-occurrecen> have less than 1 \n ");
-					System.exit(0);
-
-				}
-				/*
-				 * try {
-				 * samsung_sentiment_module.targetlist.Main.senti("-targetlist",
-				 * inputDirPath, outputDirPath, args[3],
-				 * Double.parseDouble(args[4]), Double.parseDouble(args[5])); }
-				 * catch (NumberFormatException e) { // TODO Auto-generated
-				 * catch block e.printStackTrace(); } catch (IOException e) { //
-				 * TODO Auto-generated catch block e.printStackTrace(); }
-				 */
-
-			}
-
+		try {
+			senti(inputDirPath, outputDirPath, threeClass);
+		} catch (ClassNotFoundException | IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 }
