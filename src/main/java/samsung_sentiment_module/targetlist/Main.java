@@ -1,7 +1,10 @@
 package samsung_sentiment_module.targetlist;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -16,7 +19,7 @@ import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 public class Main {
 	public static void main(String[] args) throws IOException{
 		
-		target("reviewdata", "result", "camera_Canon_G3(test)" ,"domainFilePath" ,0.506, 0.80);
+		target("reviewdata", "result", "camera_Canon_G3(test)" ,"domainFile.txt" ,0.506, 0.80);
 	}
 
 	public static void target(String inputDirPath, String outputDirPath, String productFileName, String domainFilePath, double pmi, double co_occurrence) throws IOException{
@@ -37,7 +40,8 @@ public class Main {
 		BufferedWriter output = new BufferedWriter(new FileWriter(outputFileName)); //output directory	
 
 		String domainEntity[] = new String[numOfProduct];
-		String domainList[]  = {"camera", "mp3", "phone", "router"};
+		String domainList[]  = readDomainFile(domainFilePath);
+		NumOfDomain = domainList.length;
 		String targetDomain = "";
 		
 		double[][] dv = new double[NumOfDomain][];
@@ -70,9 +74,8 @@ public class Main {
 				{
 					//if( i != 4 ) // SD500과 Ipod 는 리뷰 구분이 안되있는 문서라서 일단 배제
 						allDoc += TxtReader.readFileToReview(productFileList.get(i).getPath(),domainEntity, i);
-					System.out.println(domainEntity[i]);
+					//System.out.println(domainEntity[i]);
 				}
-				//System.exit(0);
 
 				
 				String[] Review = allDoc.split("\\[t\\]");
@@ -175,6 +178,26 @@ public class Main {
 	  static enum Input {
 	    TEXT, TREES
 	  }
+	  
+	private static String[] readDomainFile(String domainFilePath) throws IOException{
+		
+		int numOfDomain =0;
+		
+		BufferedReader reader = new BufferedReader(new FileReader(domainFilePath));
+		String line = null;
+		StringBuilder stringBuilder = new StringBuilder();
+		String ls = System.getProperty("line.separator");
+
+		line = reader.readLine();
+		
+		numOfDomain = Integer.parseInt(line.trim());
+		String[] domainList = new String[numOfDomain];
+		for(int i = 0 ; i < numOfDomain ; i++){
+			domainList[i] = reader.readLine();
+		}
+		return domainList;
+		
+	}
 	private static StanfordCoreNLP getPipeline(){
 		
 		
