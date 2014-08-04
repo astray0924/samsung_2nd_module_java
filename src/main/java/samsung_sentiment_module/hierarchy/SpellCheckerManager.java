@@ -2,6 +2,7 @@ package samsung_sentiment_module.hierarchy;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.List;
 
 import com.swabunga.spell.engine.SpellDictionaryHashMap;
@@ -16,8 +17,10 @@ public class SpellCheckerManager {
 	static {
 		try {
 
-			dictionary = new SpellDictionaryHashMap(new File(
-					"resources/dictionary/english.0.txt"));
+			URL url = FeatureExtractor.class.getClassLoader().getResource(
+					"english.0.txt");
+
+			dictionary = new SpellDictionaryHashMap(new File(url.getPath()));
 
 		} catch (IOException e) {
 			e.printStackTrace();

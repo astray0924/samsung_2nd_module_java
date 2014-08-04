@@ -5,6 +5,11 @@
 	<artifactId>samsung_sentiment_module</artifactId>
 	<version>1.0</version>
 	<packaging>jar</packaging>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+	
 	<build>
 		<plugins>
 			<plugin>
@@ -38,6 +43,7 @@
 					</descriptors>
 					<archive>
 						<manifest>
+							<addClasspath>true</addClasspath>
 							<mainClass>samsung_sentiment_module.Sentiment</mainClass>
 						</manifest>
 					</archive>
@@ -97,6 +103,11 @@
 			<groupId>com.googlecode.json-simple</groupId>
 			<artifactId>json-simple</artifactId>
 			<version>1.1.1</version>
+		</dependency>
+		<dependency>
+			<groupId>com.cedarsoftware</groupId>
+			<artifactId>json-io</artifactId>
+			<version>2.7.0</version>
 		</dependency>
 	</dependencies>
 

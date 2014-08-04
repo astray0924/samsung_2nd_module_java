@@ -12,14 +12,16 @@ public class HierarchyModuleRunner implements ModuleRunner {
 		FeatureExtractor extractor = null;
 		String outputDirPath = parsedArgs.getString("outputDirPath");
 		String centroidFilePath = parsedArgs.getString("centroidFilePath");
-		String cachePath = parsedArgs.getString("cacheDirPath");
+		String cacheDirPath = parsedArgs.getString("cacheDirPath");
 
 		try {
 			extractor = new FeatureExtractor(outputDirPath, centroidFilePath);
 
-			if (cachePath != null) {
-				extractor.loadCache(cachePath);
+			if (cacheDirPath != null) {
+
+				extractor.loadCache(cacheDirPath);
 			} else {
+
 				extractor.extract();
 				extractor.vectorize();
 				extractor.saveCache();
