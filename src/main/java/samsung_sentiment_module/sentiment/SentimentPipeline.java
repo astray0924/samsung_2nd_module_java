@@ -430,7 +430,7 @@ public class SentimentPipeline implements ModuleRunner {
 				}
 				numSen++;
 			}
-			if (numSen > 1) // sentence 분리 안되서 2개의 문장으로 되서 에러나는 것들 ...
+			if (numSen > 1) //exception handling
 				return 1;
 
 			// dependency parser loading
@@ -519,11 +519,6 @@ public class SentimentPipeline implements ModuleRunner {
 								min = dis;
 							}
 
-							/*
-							 * //그냥 거리 if( Math.abs(e.getValue()-indexOfAdj) <
-							 * min){ noun = e.getKey(); min =
-							 * Math.abs(e.getValue()-indexOfAdj); }
-							 */
 						}
 
 						// 문자 변환
@@ -580,19 +575,14 @@ public class SentimentPipeline implements ModuleRunner {
 									+ noun + "\"" + "," + "\"polarity score\":"
 									+ "[{" + pol + "}]" + "}";
 
-							// 병렬되는 word:{},{} 를 위해 콤마 찍어줌
 							if (i != (adj_list.size() - 1)
-									&& i < adjNumOfFirst - 1) { // numSen<2는 전처리
-																// 단계에서 sentence
-																// 분리가 안되서, 이곳에서
-																// 분리되어 오류를 만듬
+									&& i < adjNumOfFirst - 1) { // numSen<2 전처리
 								out = out + ",";
 							}
 							sb.append(out);
 
 						}
 
-						// System.out.println("("+noun+","+adj+","+senti +")" );
 					}
 
 					start = sub_end;
@@ -792,8 +782,7 @@ public class SentimentPipeline implements ModuleRunner {
 		}
 		System.out.println(sb.toString());
 
-		BufferedWriter output = new BufferedWriter(new FileWriter(outputDirPath
-				+ "/targetlist"));
+		BufferedWriter output = new BufferedWriter(new FileWriter("./temp/targetlist"));
 
 		output.write(sb.toString());
 		output.close();
