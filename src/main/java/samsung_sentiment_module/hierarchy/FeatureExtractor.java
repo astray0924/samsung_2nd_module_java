@@ -10,7 +10,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -33,9 +32,11 @@ import com.google.common.collect.Ordering;
 import com.google.common.collect.TreeMultimap;
 
 public class FeatureExtractor {
-	private static final String DATA_DIR = "resources/data";
-	private static final String DIC_DIR = "resources/dictionary";
-	private static final String DATA_POS = "pos_tagging.txt";
+	private static final String INPUT_DIR_PATH = "resources/data";
+	private static final String DIC_DIR_PATH = "resources/dictionary";
+	private static final String POS_FILE = "pos_tagging.txt";
+	private String outputDirPath = null;
+	private String centroidFilePath = null;
 
 	// 정규표현식
 	private static final String SENT_PATTERN_STRING = "\\b(\\w+/NN\\s?)+\\w+/VB[PZ]? (\\w+/RB\\s)?\\w+/JJ(\\s*,/, (\\w+/RB\\s)?\\w+/JJ(\\s,/,)?)*(\\s\\w+/CC (\\w+/RB\\s)?\\w+/JJ)?\\s";
@@ -66,9 +67,24 @@ public class FeatureExtractor {
 	private Map<String, HashMap<String, Double>> ppmiContexts = new HashMap<String, HashMap<String, Double>>();
 	private Map<String, FeatureVector> vectors = new HashMap<String, FeatureVector>();
 
-	public FeatureExtractor() throws IOException {
+	// 분류를 위한 centroid
+	private Map<String, String> centroids = new HashMap<String, String>();
+
+	public FeatureExtractor(String outputDirPath, String centroidFilePath)
+			throws IOException {
+		// output path
+		this.outputDirPath = outputDirPath;
+		this.centroidFilePath = centroidFilePath;
+
 		// populate stopwords
-		Path stopFile = Paths.get(DIC_DIR).resolve("stopwords.txt");
+		populateStopWords();
+
+		// populate centroids
+		populateCentroids();
+	}
+
+	protected void populateStopWords() throws IOException {
+		Path stopFile = Paths.get(DIC_DIR_PATH).resolve("stopwords.txt");
 		try (BufferedReader reader = Files.newBufferedReader(stopFile,
 				StandardCharsets.UTF_8)) {
 			String line = "";
@@ -78,6 +94,31 @@ public class FeatureExtractor {
 				stopwords.add(stopWord);
 			}
 		}
+	}
+
+	protected void populateCentroids() throws IOException {
+		Path centroidFile = Paths.get(centroidFilePath);
+		try (BufferedReader reader = Files.newBufferedReader(centroidFile,
+				StandardCharsets.UTF_8)) {
+			String line = "";
+			while ((line = reader.readLine()) != null) {
+				try {
+					String[] centroidTargetPair = line.trim().split("=");
+					String centroid = centroidTargetPair[0].trim();
+					String target = centroidTargetPair[1].toLowerCase().trim();
+
+					centroids.put(centroid, target);
+				} catch (IndexOutOfBoundsException e) {
+					System.out.println("Failed to parse the line: " + line);
+				} catch (NullPointerException e) {
+					System.out.println("Failed to parse the line: " + line);
+				}
+			}
+		}
+	}
+
+	protected void debugCentroids() {
+		System.out.println(centroids);
 	}
 
 	public Map<String, Multiset<String>> getCountContexts() {
@@ -165,13 +206,14 @@ public class FeatureExtractor {
 	}
 
 	@SuppressWarnings("unchecked")
-	public void deserializeOutputs() throws ClassNotFoundException, IOException {
+	public void deserializeOutputs(String cacheDir)
+			throws ClassNotFoundException, IOException {
 		FileInputStream fis = null;
 		ObjectInputStream ois = null;
-		Path dir = Paths.get("output/vectors");
+		Path dir = Paths.get(cacheDir);
 
 		if (!Files.exists(dir)) {
-			throw new IllegalStateException("Serialized outputs aren't exist!");
+			throw new IllegalStateException("Provided cache dir is invalid!");
 		}
 
 		// vocabulary
@@ -300,8 +342,8 @@ public class FeatureExtractor {
 	}
 
 	public void extract() throws IOException {
-		Path dir = Paths.get(DATA_DIR);
-		Path dataFile = dir.resolve(DATA_POS);
+		Path dir = Paths.get(INPUT_DIR_PATH);
+		Path dataFile = dir.resolve(POS_FILE);
 		try (BufferedReader reader = Files.newBufferedReader(dataFile,
 				StandardCharsets.UTF_8)) {
 			String line = "";

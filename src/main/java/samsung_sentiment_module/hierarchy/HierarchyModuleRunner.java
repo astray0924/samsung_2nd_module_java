@@ -10,12 +10,21 @@ public class HierarchyModuleRunner implements SamsungModuleRunner {
 	@Override
 	public void run(String[] args, Namespace parsedArgs) {
 		FeatureExtractor extractor = null;
+		String outputDirPath = parsedArgs.getString("outputDirPath");
+		String centroidFilePath = parsedArgs.getString("centroidFilePath");
+		String cachePath = parsedArgs.getString("cachedVectorDirPath");
+
 		try {
-			extractor = new FeatureExtractor();
-			extractor.extract();
-			extractor.vectorize();
-			extractor.serializeOutputs();
-			extractor.deserializeOutputs();
+			extractor = new FeatureExtractor(outputDirPath, centroidFilePath);
+
+			if (cachePath != null) {
+				extractor.deserializeOutputs(cachePath);
+			} else {
+				extractor.extract();
+				extractor.vectorize();
+				extractor.serializeOutputs();
+			}
+
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		} catch (ClassNotFoundException e) {

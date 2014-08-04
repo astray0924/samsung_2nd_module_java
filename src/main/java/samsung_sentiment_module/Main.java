@@ -101,7 +101,7 @@ public class Main {
 		parser.addArgument("-centroid", "--centroidFilePath")
 				.metavar("<file_path>").type(String.class).nargs("?")
 				.help("the path of centroid file\n(used in hierarchy_module)");
-		parser.addArgument("-cache", "--loadCachedVectorDirPath")
+		parser.addArgument("-cache", "--cachedVectorDirPath")
 				.metavar("<cache_dir>").type(String.class).nargs("?")
 				.help("the path of cached vectors' directory");
 
