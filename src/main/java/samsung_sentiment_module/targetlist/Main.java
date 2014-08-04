@@ -9,17 +9,24 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
+
+import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 
 public class Main {
 	public static void main(String[] args) throws IOException{
 		
-		senti("-targetlist", "reviewdata", "result", "productFileName" , 0.706, 0.80);
+		senti("-targetlist", "reviewdata", "result", "camera_Canon_G3(test)" , 0.706, 0.80);
 	}
 
 	public static void senti(String mode, String inputDirPath, String outputDirPath, String productFileName ,double pmi, double co_occurrence) throws IOException{
 		// TODO Auto-generated method stub
 
+		StanfordCoreNLP pipeline = getPipeline();
+		
 		String dirName = inputDirPath;
+
+		int NumOfDomain = 4;
 		
 		fileIO io = new fileIO();
 		List<File> productFileList = io.addTxtFile(dirName);
@@ -31,10 +38,14 @@ public class Main {
 
 		
 		String domainEntity[] = new String[numOfProduct];
-		double[] camera = new double[numOfProduct];
-		double[] mp3 = new double[numOfProduct];
-		double[] phone = new double[numOfProduct];
-		double[] router = new double[numOfProduct];
+		String domainList[]  = {"camera","mp3","phone","router"};
+		double[][] dv = new double[NumOfDomain][];
+		
+		for(int i = 0 ; i < NumOfDomain; i++){
+			dv[i] = new double[numOfProduct];
+			
+		}
+		
 		double[] temp  = new double[numOfProduct];
 
 		
@@ -47,7 +58,6 @@ public class Main {
 			try {
 				
 				//review is seperated for tfidf
-				
 				for(int i = 0; i < productFileList.size() ; i++)
 				{
 					//if( i != 4 ) // SD500과 Ipod 는 리뷰 구분이 안되있는 문서라서 일단 배제
@@ -72,40 +82,22 @@ public class Main {
 					 * 
 					 * */
 					
-					if(  i == 7 ) //domain i 만 성능펴가 하기 위함
-						Tagger_IRNLP.tagger(productFileList.get(i).getPath(), i, nounList); 
+					if( productFileList.get(i).getName().contains(productFileName) ){ //domain i 만 성능펴가 하기 위함
+						Tagger_IRNLP irnlp = new Tagger_IRNLP();
+						irnlp.tagger(productFileList.get(i).getPath(), i, nounList, pipeline); 
+						
+					}
 					
 					text[i] = TxtReader.readFile2(productFileList.get(i).getPath());
 					
-					camera[i] = computePMI.pmiScore(text[i], "camera", domainEntity[i], Review);
-					mp3[i] = computePMI.pmiScore(text[i], "mp3", domainEntity[i], Review);
-					phone[i] = computePMI.pmiScore(text[i], "phone", domainEntity[i], Review);
-					router[i] = computePMI.pmiScore(text[i], "router", domainEntity[i], Review);
-							
-				}			
+					for(int j = 0 ; j < NumOfDomain; j++)
+						dv[j][i] = computePMI.pmiScore(text[i], domainList[j], domainEntity[i], Review);
 					
-				
-				/* test */
-				
-				
-				// print domain vector 
-//				for(int i = 0 ; i <productFileList.size() ;i++ )
-//					System.out.print(camera[i]+" ");
-//				System.out.println();
-//				for(int i = 0 ; i <productFileList
-//						.size() ;i++ )
-//					System.out.print(mp3[i]+" ");
-//				System.out.println();
-//				for(int i = 0 ; i <productFileList.size() ;i++ )
-//					System.out.print(phone[i]+" ");
-//				System.out.println();
-//				for(int i = 0 ; i <productFileList.size() ;i++ )
-//					System.out.print(router[i]+" ");
-//				System.out.println();	
-				
-				phone[3] = 0.4;
-				phone[6] += 2;
-				phone[7] += 2;
+				}			
+							
+//				phone[3] = 0.4;
+//				phone[6] += 2;
+//				phone[7] += 2;
 				
 				
 				
@@ -138,7 +130,7 @@ public class Main {
 						a.setSimilairty(camera,mp3,phone,router);
 						
 						// 1 평가시 도메인 단어 바꿔야됨
-						if( a.pmiVectorSimilarity(phone) > pmi){
+						if( a.pmiVectorSimilarity(phone) > pmi){  //phone -> target 파일의 도메인을 domain list 번호로 매치해서
 							
 							jsonResult.append("{\"opinion target\":\"" + a.word + "\"},");
 							
@@ -171,6 +163,37 @@ public class Main {
 				e.printStackTrace();
 			}	
 			output.close();
+	}
+  static enum Output {
+	    PENNTREES, VECTORS, ROOT, PROBABILITIES
+	  }
+
+	  static enum Input {
+	    TEXT, TREES
+	  }
+	private static StanfordCoreNLP getPipeline(){
+		
+		
+	    boolean stdin = false;
+	    List<Output> outputFormats = Arrays.asList(new Output[] { Output.PROBABILITIES});
+	    Input inputFormat = Input.TEXT;
+
+
+	    Properties props = new Properties();
+
+	    if (stdin) {
+	      props.setProperty("ssplit.eolonly", "true");
+	    }
+	    if (inputFormat == Input.TREES) {
+	      props.setProperty("annotators", "sentiment");
+	      props.setProperty("enforceRequirements", "false");
+	    } else {
+	      props.setProperty("annotators", "tokenize, ssplit, parse, sentiment");
+	    }
+	    
+	    StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
+	    
+	    return pipeline;
 	}
 	
 

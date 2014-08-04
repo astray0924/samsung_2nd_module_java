@@ -11,22 +11,48 @@ import edu.stanford.nlp.tagger.maxent.MaxentTagger;
 import edu.stanford.nlp.tagger.maxent.TaggerConfig;
 
 public class Tagger_IRNLP {
+	
+	static MaxentTagger tagger;
+	
+	public Tagger_IRNLP(){
+		String model = "taggers/english-left3words-distsim.tagger";
+		TaggerConfig config = new TaggerConfig("-outputFormat","xml",
+				"-model", model);
+
+		tagger = new MaxentTagger(model, config);
+		
+	}
+	
+	
 	public static String tagger(String inputFile) throws IOException,
 			ClassNotFoundException {
 
-		String model = "taggers/english-left3words-distsim.tagger";
-		TaggerConfig config = new TaggerConfig("-outputFormat", "xml",
-				"-model", model);
 
-		MaxentTagger tagger = new MaxentTagger(model, config);
 		String raw = TxtReader.readFile(inputFile);  // 각각의 file path
 
 		String tagged = tagger.tagString(raw);
-		//System.out.println(tagged);
+		System.out.println(tagged);
 		
 		return tagged;
 
 	}
+	public static String tagger2(String inputFile) throws IOException,
+	ClassNotFoundException {
+
+	String model = "taggers/english-left3words-distsim.tagger";
+	TaggerConfig config = new TaggerConfig( "-sentenceDelimiter", "\n", "-tokenize", "false", "-tagSeparator", "/", 
+			"-model", model);
+	
+	MaxentTagger tagger = new MaxentTagger(model, config);
+	String raw = TxtReader.readFile(inputFile);  // 각각의 file path
+	
+	String tagged = tagger.tagString(raw);
+	System.out.println(tagged);
+	
+	
+	return tagged;
+	
+	}	
 
 	public static void writeFile(String outputString, String outputFileName) {
 		try {
@@ -42,6 +68,7 @@ public class Tagger_IRNLP {
 			System.exit(1);
 		}
 	}
+	
 
 
 	public static HashMap<Integer, String[]> stringToMap(String input) {

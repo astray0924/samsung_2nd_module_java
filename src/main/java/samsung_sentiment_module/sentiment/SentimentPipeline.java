@@ -26,6 +26,7 @@ import java.util.Set;
 import org.ejml.simple.SimpleMatrix;
 
 import samsung_sentiment_module.SamsungModule;
+import samsung_sentiment_module.targetlist.fileIO;
 import edu.stanford.nlp.io.IOUtils;
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
@@ -57,12 +58,6 @@ import edu.stanford.nlp.util.Generics;
 
 
 
-
-
-
-
-
-
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -83,7 +78,39 @@ import java.util.regex.Pattern;
 
 public class SentimentPipeline implements SamsungModule {
   private static final NumberFormat NF = new DecimalFormat("0.0000");
+  
+  private static List<String> targetList =  new ArrayList<String>();
+  
+  static StanfordCoreNLP pipeline;
+  static Tagger_IRNLP irnlp;
+  
+  public SentimentPipeline(){
+	  
+	    boolean stdin = false;
 
+	    List<Output> outputFormats = Arrays.asList(new Output[] { Output.PROBABILITIES});
+	    Input inputFormat = Input.TEXT;
+
+
+	    Properties props = new Properties();
+
+	    if (stdin) {
+	      props.setProperty("ssplit.eolonly", "true");
+	    }
+	    if (inputFormat == Input.TREES) {
+	      props.setProperty("annotators", "sentiment");
+	      props.setProperty("enforceRequirements", "false");
+	    } else {
+	      props.setProperty("annotators", "tokenize, ssplit, parse, sentiment");
+	    }
+	    
+	    this.pipeline = new StanfordCoreNLP(props);
+		this.irnlp = new Tagger_IRNLP();
+	  
+	  
+  }
+  
+  
   static class PolarityProb {
 		float polar[] = new float[5];
 		
@@ -383,31 +410,9 @@ public class SentimentPipeline implements SamsungModule {
   }
   public static int treeBank(String s, ArrayList<String> adj_list,	HashMap<String , Integer> adjMap,	HashMap<String , Integer> nnMap, String outputFileName,StringBuffer sb,boolean threeClass ) throws IOException{
 		
-	    boolean stdin = false;
-	   
-	    
-	    /*문장 test 용*/
-    	//sb.append(s);
-    	// ;
-    	
+
 	    List<Output> outputFormats = Arrays.asList(new Output[] { Output.PROBABILITIES});
-	    Input inputFormat = Input.TEXT;
 
-
-	    Properties props = new Properties();
-
-	    if (stdin) {
-	      props.setProperty("ssplit.eolonly", "true");
-	    }
-	    if (inputFormat == Input.TREES) {
-	      props.setProperty("annotators", "sentiment");
-	      props.setProperty("enforceRequirements", "false");
-	    } else {
-	      props.setProperty("annotators", "tokenize, ssplit, parse, sentiment");
-	    }
-
-	    
-	    StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
 	    
 	    
 	    	String line = s;
@@ -536,7 +541,10 @@ public class SentimentPipeline implements SamsungModule {
 	            	if( isNetral(c)){
 	            		
 		            	System.out.println("pair : "  + adj + " , "+ noun);
-	            		
+		            	
+		            	if(!targetList.contains(noun))
+		            		targetList.add(noun);
+		            	
 	            		String pol = null;
 		            	if(threeClass==true){
 		            		pol= 	
@@ -589,6 +597,8 @@ public class SentimentPipeline implements SamsungModule {
 	          // used for line-by-line text processing
 	         // System.out.println("");
 	        }
+	        
+	        
 			return 0;
 	      
 	      
@@ -660,9 +670,16 @@ public class SentimentPipeline implements SamsungModule {
 			BufferedReader input = new BufferedReader(new InputStreamReader(new FileInputStream(file),"UTF-8"));
 			
 			//System.out.println(file.getCanonicalPath());
-			String taggedDoc = Tagger_IRNLP.tagger(file.getCanonicalPath());   // file 의 path를 받아서 tagged string 리턴
+			String taggedDoc = irnlp.tagger(file.getCanonicalPath());   // file 의 path를 받아서 tagged string 리턴
 			//System.out.println(taggedDoc);
-
+			
+			/* pos tagging, module 3에 전달 */
+			BufferedWriter outputPOS = new BufferedWriter(new FileWriter(outputFileName+".pos"));
+			String t = Tagger_IRNLP.tagger2(file.getCanonicalPath());
+			outputPOS.write(t);
+			outputPOS.close();
+			
+			
 			
 			//if(i !=0 ) //file path 배열의 , 구분
 				//sb.append(",");
@@ -734,6 +751,48 @@ public class SentimentPipeline implements SamsungModule {
   
 	  
   }
+  private static void targetListWrite(String outputDirPath) throws IOException{
+		StringBuilder sb = new StringBuilder();
+		List<File> files = addPosFile(outputDirPath);
+		
+		String doc = "";
+		for(int i = 0 ; i < files.size() ; i++){
+			File f = files.get(i);
+			
+			doc += TxtReader.readFile(f.getCanonicalPath());
+			
+		}
+		System.out.println(doc);
+		
+		for(int i = 0 ; i < targetList.size(); i++){
+			int freq = doc.split(targetList.get(i)).length-1;
+			sb.append(targetList.get(i)+"\t"+freq+"\n");
+			
+			
+		}
+		System.out.println(sb.toString());
+		
+		BufferedWriter output = new BufferedWriter(new FileWriter(outputDirPath+"/targetlist"));
+
+		output.write(sb.toString());
+		output.close();
+
+  }
+  private static List<File> addPosFile(String dirName) {
+		File root = new File(dirName);
+		List<File> files = new ArrayList<File>();
+		for (File child : root.listFiles()) {
+			if (child.isFile() && child.getName().endsWith(".pos")) {
+				files.add(child); 
+			}/* 	
+			if (child.isFile() ) {
+				files.add(child); 
+			} */
+		}
+		return files;
+	}
+  
+  
   public static void senti_sentResult(String inputDirPath, String outputDirPath, boolean threeClass) throws IOException, ClassNotFoundException{
 	  
 	  File outputD = new File(outputDirPath);
@@ -746,7 +805,6 @@ public class SentimentPipeline implements SamsungModule {
 	  
 	  
 	  List<File> files = addTxtFile(inputDirPath); // input directory
-		
 
 		for (int i = 0; i < files.size(); i++) {
 			StringBuffer sb = new StringBuffer();
@@ -760,7 +818,7 @@ public class SentimentPipeline implements SamsungModule {
 			BufferedReader input = new BufferedReader(new InputStreamReader(new FileInputStream(file),"UTF-8"));
 			
 			//System.out.println(file.getCanonicalPath());
-			String taggedDoc = Tagger_IRNLP.tagger(file.getCanonicalPath());   // file 의 path를 받아서 tagged string 리턴
+			String taggedDoc = irnlp.tagger(file.getCanonicalPath());   // file 의 path를 받아서 tagged string 리턴
 			//System.out.println(taggedDoc);
 
 			
@@ -831,31 +889,8 @@ public class SentimentPipeline implements SamsungModule {
 	}
 	  public static String getAdjfromSent(String s) throws IOException{
 			
-		    boolean stdin = false;
-		   
-		    
-		    /*문장 test 용*/
-	  	//sb.append(s);
-	  	// ;
 	  	
 		    List<Output> outputFormats = Arrays.asList(new Output[] { Output.PROBABILITIES});
-		    Input inputFormat = Input.TEXT;
-
-
-		    Properties props = new Properties();
-
-		    if (stdin) {
-		      props.setProperty("ssplit.eolonly", "true");
-		    }
-		    if (inputFormat == Input.TREES) {
-		      props.setProperty("annotators", "sentiment");
-		      props.setProperty("enforceRequirements", "false");
-		    } else {
-		      props.setProperty("annotators", "tokenize, ssplit, parse, sentiment");
-		    }
-
-		    
-		    StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
 		    
 		    
 		    	String line = s;
@@ -868,15 +903,9 @@ public class SentimentPipeline implements SamsungModule {
 		      	  
 		          int check = 0;
 		          for (CoreMap sentence : annotation.get(CoreAnnotations.SentencesAnnotation.class)) {
-		        	 		
-//		    		System.out.println();
-//		    		System.out.println();
-//		    		System.out.println("input sentence : " + sentence.toString());
-		    		 Tree t = outputLabelTree(System.out, sentence, outputFormats);
-		    		 
+		    		 Tree t = outputLabelTree(System.out, sentence, outputFormats);		    		 
 		        	 result = t.toString();
-		        	    	 
-		             //System.out.println("result :: " + result);
+
 		          } 	
 
 		        }
@@ -950,6 +979,7 @@ public class SentimentPipeline implements SamsungModule {
 		  if(moduleOption == true)
 			try {
 				senti(inputDirPath, outputDirPath, threeClass);
+				targetListWrite(outputDirPath);
 			} catch (ClassNotFoundException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

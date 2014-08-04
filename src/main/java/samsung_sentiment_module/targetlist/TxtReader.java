@@ -5,6 +5,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 
+import edu.stanford.nlp.pipeline.StanfordCoreNLP;
+
 public class TxtReader {
 
 	public static String readFile(String file) throws IOException {
@@ -98,7 +100,7 @@ public class TxtReader {
 	
 	
 	// opnion word 뽑아 낼 때 사용
-	public static String readFile(String file, int tempNum) throws IOException {
+	public static String readFile(String file, int tempNum ,StanfordCoreNLP pipeline) throws IOException {
 		BufferedReader reader = new BufferedReader(new FileReader(file));
 		String line = null;
 		StringBuilder stringBuilder = new StringBuilder();
@@ -118,7 +120,7 @@ public class TxtReader {
 			line = rmStopNumber(line);
 			
 			/* 임시 결과 뽑기*/
-			line = extSentiAdj.sentiResult(line);
+			line = extSentiAdj.sentiResult(line, pipeline);
 			stringBuilder.append(line);
 			stringBuilder.append(ls);
 			

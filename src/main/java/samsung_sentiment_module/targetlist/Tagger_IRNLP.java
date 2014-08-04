@@ -20,28 +20,36 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
 import org.w3c.dom.Element;
 
+import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.tagger.maxent.MaxentTagger;
 import edu.stanford.nlp.tagger.maxent.TaggerConfig;
 
 
 
 public class Tagger_IRNLP {
-	public static String tagger(String inputFile, int fileNum, ArrayList<wordINFO> nounList) throws IOException {
-
+	
+	static MaxentTagger tagger;
+	
+	public Tagger_IRNLP(){
 		String model = "taggers/english-left3words-distsim.tagger";
-		TaggerConfig config = new TaggerConfig("-outputFormat", "xml",
+		TaggerConfig config = new TaggerConfig("-outputFormat","xml",
 				"-model", model);
 
-		MaxentTagger tagger = new MaxentTagger(model, config);
-		String raw = TxtReader.readFile(inputFile);  // 각각의 file path
+		tagger = new MaxentTagger(model, config);
 		
+	}
+	
+	public static String tagger(String inputFile, int fileNum, ArrayList<wordINFO> nounList, StanfordCoreNLP pipeline) throws IOException {
+
+		String raw = TxtReader.readFile(inputFile);  // 각각의 file path
 
 		// 문장 태깅 
 		String tagged = tagger.tagString(raw);
 		tagged = setRootTag(tagged);
+		System.out.println(tagged);
 	    //System.out.println(tagged);		
 		// 명사 추출 
-		readXML(tagged, nounList, fileNum);
+		readXML(tagged, nounList, fileNum , pipeline);
 	
 		return tagged;
 
@@ -55,7 +63,7 @@ public class Tagger_IRNLP {
 		
 	}
 	
-	public static void readXML(String xmlString, ArrayList<wordINFO> nounList ,int fileNum ){
+	public static void readXML(String xmlString, ArrayList<wordINFO> nounList ,int fileNum,StanfordCoreNLP pipeline ){
 		
 		try {
 			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
@@ -85,7 +93,7 @@ public class Tagger_IRNLP {
 					
 					String rawSent = newLineToSpace(eElement.getTextContent());
 					
-					List<Integer> adjList = getSentiAdj(words, rawSent);
+					List<Integer> adjList = getSentiAdj(words, rawSent, pipeline);
 					
 					for( int i = 0; i < num ; i++){
 						Element node = (Element) words.item(i);
@@ -100,13 +108,16 @@ public class Tagger_IRNLP {
 		}
 	}
 	
-	public static List<Integer> getSentiAdj(NodeList words, String rawSent){
+	public static List<Integer> getSentiAdj(NodeList words, String rawSent,StanfordCoreNLP pipeline){
 		
 	    NamedNodeMap attributes;
 	    // sentiment 모듈에 의한 트리 결과 얻기
-        String sentiTree = 	extSentiAdj.sentiResult(rawSent);
+	    extSentiAdj esa = new extSentiAdj();
+	    System.out.println(rawSent);
+        String sentiTree = 	esa.sentiResult(rawSent,pipeline);
         List<Integer> sentiPosition = new ArrayList<Integer>();
         String savedSentiTree = sentiTree;
+        
         if(sentiTree.length() > 6){
 		    for( int i = 0 ; i < words.getLength() ; i++){
 				Element node = (Element) words.item(i);
