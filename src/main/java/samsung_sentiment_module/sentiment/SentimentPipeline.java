@@ -941,7 +941,7 @@ public class SentimentPipeline implements ModuleRunner {
 		boolean threeClass = true;
 		if(fineGrained==null)
 			threeClass = true;
-		else if(fineGrained.contains("fine"))
+		else if(fineGrained.contains("Y"))
 			threeClass = false;
 
 		try {
