@@ -19,7 +19,7 @@
 					<archive>
 						<manifest>
 							<addClasspath>true</addClasspath>
-							<mainClass>samsung_sentiment_module.Sentiment</mainClass>
+							<mainClass>samsung_sentiment_module.Main</mainClass>
 						</manifest>
 					</archive>
 				</configuration>
