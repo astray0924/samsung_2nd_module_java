@@ -1,4 +1,10 @@
-package samsung_sentiment_module;
+package samsung_sentiment_module.abs;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
@@ -26,6 +32,22 @@ public class Main {
 			parser.handleError(e);
 		}
 
+		// 만약 output 디렉토리가 존재하지 않으면 새로 생성
+		Path outputPath = null;
+		try {
+			outputPath = Paths.get(parsedArgs.getString("outputDirPath"));
+			if (!Files.exists(outputPath)) {
+				Files.createDirectories(outputPath);
+			}
+
+		} catch (NullPointerException e) {
+			// System.err.println();
+		} catch (InvalidPathException e) {
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
 		// 실행할 모듈 선택
 		String modeString = null;
 		Module mode = null;
@@ -42,7 +64,7 @@ public class Main {
 		}
 
 		// switch 문으로 선택된 모듈 실행
-		SamsungModuleRunner module = null;
+		ModuleRunner module = null;
 
 		switch (mode) {
 		case SENTI: // 감성 분석 모듈
@@ -70,21 +92,24 @@ public class Main {
 				.metavar("senti | target | hierarchy").type(String.class)
 				.nargs("?")
 				.help("the module to run: senti | target | hierarchy");
+		
 		parser.addArgument("-i", "--inputDirPath")
 				.metavar("<file_path>")
 				.type(String.class)
 				.nargs("?")
 				.help("the path of input directory \n(required for senti and target module)");
-		parser.addArgument("-o", "--outputDirPath").metavar("outputDirPath")
+		
+		parser.addArgument("-o", "--outputDirPath").metavar("<file_path>")
 				.type(String.class).nargs("?")
 				.help("the path of output directory");
-		parser.addArgument("-classnum", "--number_of_classes")
-				.dest("classNum")
-				.metavar("N")
-				.type(Integer.class)
+		
+		parser.addArgument("-fineGrained", "--fine")
+				.metavar("y|n")
+				.type(String.class)
 				.nargs("?")
-				.setDefault(2)
-				.help("the number of sentiment classes to be used\n(2: [+/-] OR 3: [+/-/0])\n(used in senti_module)");
+				.setDefault('y')
+				.help("whether to produce fine-grained analysis result or not");
+		
 		parser.addArgument("-target_domain", "--targetDomainFilePath")
 				.metavar("<file_path>")
 				.type(String.class)

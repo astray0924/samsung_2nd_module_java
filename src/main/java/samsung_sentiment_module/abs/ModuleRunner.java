@@ -1,7 +1,7 @@
-package samsung_sentiment_module;
+package samsung_sentiment_module.abs;
 
 import net.sourceforge.argparse4j.inf.Namespace;
 
-public interface SamsungModuleRunner {
+public interface ModuleRunner {
 	public void run(String[] args, Namespace parsedArgs);
 }

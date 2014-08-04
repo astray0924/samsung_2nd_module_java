@@ -1,6 +1,7 @@
 package samsung_sentiment_module.hierarchy;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -10,6 +11,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -72,7 +74,7 @@ public class FeatureExtractor {
 
 	public FeatureExtractor(String outputDirPath, String centroidFilePath)
 			throws IOException {
-		// output path
+		// output & centroid path
 		this.outputDirPath = outputDirPath;
 		this.centroidFilePath = centroidFilePath;
 
@@ -206,8 +208,8 @@ public class FeatureExtractor {
 	}
 
 	@SuppressWarnings("unchecked")
-	public void deserializeOutputs(String cacheDir)
-			throws ClassNotFoundException, IOException {
+	public void loadCache(String cacheDir) throws ClassNotFoundException,
+			IOException {
 		FileInputStream fis = null;
 		ObjectInputStream ois = null;
 		Path dir = Paths.get(cacheDir);
@@ -242,7 +244,7 @@ public class FeatureExtractor {
 		fis.close();
 	}
 
-	public void serializeOutputs() throws IOException {
+	public void saveCache() throws IOException {
 		FileOutputStream fos = null;
 		ObjectOutputStream oos = null;
 		Path dir = Paths.get("output/vectors");
@@ -278,7 +280,16 @@ public class FeatureExtractor {
 		oos.close();
 	}
 
-	public void debugClassification(String centroid) {
+	public void classifyAll() throws IOException {
+		for (String className : centroids.keySet()) {
+			String centroid = centroids.get(className);
+
+			classify(className, centroid);
+		}
+	}
+
+	protected void classify(String className, String centroid)
+			throws IOException {
 		if (!vectors.containsKey(centroid)) {
 			throw new IllegalArgumentException(
 					"Centroid is invalid (no such a target: " + centroid + ")");
@@ -291,18 +302,28 @@ public class FeatureExtractor {
 				.natural().reverse(), Ordering.natural());
 		for (String t : vectors.keySet()) {
 			FeatureVector otherVector = vectors.get(t);
-			double sim = 1 - metric.distance(targetVector, otherVector);
-			if (!t.isEmpty() && sim != Double.NaN) {
+			Double sim = 1 - metric.distance(targetVector, otherVector);
+			if (!t.isEmpty() && !sim.isNaN()) {
 				sortedBySim.put(sim, t);
 			}
 		}
 
 		// 출력
-		for (Double t : sortedBySim.keySet()) {
-			if (t >= 0.05) {
-				System.out.printf("%s: %s\n", t, sortedBySim.get(t));
+		Path dir = Paths.get(outputDirPath).resolve("hierarchy");
+		if (!Files.exists(dir)) {
+			Files.createDirectories(dir);
+		}
+
+		Path outputFile = dir.resolve(className + ".txt");
+		try (BufferedWriter writer = Files.newBufferedWriter(outputFile,
+				StandardCharsets.UTF_8, StandardOpenOption.WRITE,
+				StandardOpenOption.CREATE)) {
+			for (Double t : sortedBySim.keySet()) {
+				String line = String.format("%s: %s\n", t, sortedBySim.get(t));
+				writer.write(line);
 			}
 		}
+
 	}
 
 	public void debug() {
@@ -311,7 +332,7 @@ public class FeatureExtractor {
 		System.out.println(vectors);
 	}
 
-	public String sanitize(String token) {
+	protected String sanitize(String token) {
 		String sanitizedToken = token;
 
 		if (token.contains(" ") || token.contains("\t")) { // 두 단어 이상으로 이루어진 구일
