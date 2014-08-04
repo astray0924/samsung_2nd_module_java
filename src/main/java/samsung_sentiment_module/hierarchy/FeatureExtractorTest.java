@@ -14,6 +14,16 @@ public class FeatureExtractorTest {
 	}
 
 	@Test
+	public void testExtract() {
+		try {
+			extractor.extract();
+		} catch (IOException e) {
+
+			e.printStackTrace();
+		}
+	}
+
+	@Test
 	public void testSanitize() throws IOException {
 		String[] testTokens = new String[] { "test", "test2", "nice resturant",
 				"nice\tresturant", "Chinese restaurant" };

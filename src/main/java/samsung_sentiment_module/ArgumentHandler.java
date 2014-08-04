@@ -23,6 +23,10 @@ public class ArgumentHandler {
 				StandardCharsets.UTF_8)) {
 			String line = "";
 			while ((line = reader.readLine()) != null) {
+				if (line.startsWith("#")) {
+					continue;
+				}
+				
 				try {
 					String[] pair = line.trim().split("=");
 					String key = pair[0].trim();

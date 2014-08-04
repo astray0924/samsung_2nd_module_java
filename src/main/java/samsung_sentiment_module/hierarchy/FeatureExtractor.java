@@ -7,6 +7,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -20,6 +22,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import cc.mallet.types.Alphabet;
@@ -36,9 +39,7 @@ import com.google.common.collect.Ordering;
 import com.google.common.collect.TreeMultimap;
 
 public class FeatureExtractor {
-	private static final String INPUT_DIR_PATH = "src/main/resources/data";
-	private static final String DIC_DIR_PATH = "src/main/resources/dictionary";
-	private static final String POS_FILE = "pos_tagging.txt";
+	private static final String INPUT_FILE_PATH = "./temp/tagged.pos";
 	private String outputDirPath = null;
 	private String centroidFilePath = null;
 
@@ -88,7 +89,14 @@ public class FeatureExtractor {
 	}
 
 	protected void populateStopWords() throws IOException {
-		Path stopFile = Paths.get(DIC_DIR_PATH).resolve("stopwords.txt");
+		URL stopUrl = FeatureExtractor.class.getClassLoader().getResource(
+				"stopwords.txt");
+		Path stopFile = null;
+		try {
+			stopFile = Paths.get(stopUrl.toURI());
+		} catch (URISyntaxException e) {
+			e.printStackTrace();
+		}
 		try (BufferedReader reader = Files.newBufferedReader(stopFile,
 				StandardCharsets.UTF_8)) {
 			String line = "";
@@ -98,6 +106,7 @@ public class FeatureExtractor {
 				stopwords.add(stopWord);
 			}
 		}
+
 	}
 
 	protected void populateCentroids() throws IOException {
@@ -316,18 +325,21 @@ public class FeatureExtractor {
 			Files.createDirectories(dir);
 		}
 
-		Path outputFile = dir.resolve(className + ".json");
+		Path outputFile = dir.resolve(className + ".txt");
 		JSONObject json = new JSONObject();
-		
+
 		try (BufferedWriter writer = Files.newBufferedWriter(outputFile,
 				StandardCharsets.UTF_8, StandardOpenOption.WRITE,
 				StandardOpenOption.CREATE)) {
 			for (Double t : sortedBySim.keySet()) {
-				json.put(t, sortedBySim.get(t));
+				JSONArray array = new JSONArray();
+				array.addAll(sortedBySim.get(t));
+
+				json.put(t, array);
 			}
-			
-			json.writeJSONString(writer);
-		} 
+
+			writer.write(json.toJSONString());
+		}
 
 	}
 
@@ -368,8 +380,8 @@ public class FeatureExtractor {
 	}
 
 	public void extract() throws IOException {
-		Path dir = Paths.get(INPUT_DIR_PATH);
-		Path dataFile = dir.resolve(POS_FILE);
+		Path dataFile = Paths.get(INPUT_FILE_PATH);
+
 		try (BufferedReader reader = Files.newBufferedReader(dataFile,
 				StandardCharsets.UTF_8)) {
 			String line = "";
@@ -447,7 +459,6 @@ public class FeatureExtractor {
 			}
 		}
 	}
-
 	// private void listDataDir() {
 	// try {
 	// Path dir = Paths.get(DATA_DIR);
