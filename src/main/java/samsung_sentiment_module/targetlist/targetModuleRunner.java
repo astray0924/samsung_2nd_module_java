@@ -88,10 +88,8 @@ public class targetModuleRunner implements ModuleRunner {
 				
 				//review is seperated for tfidf
 				for(int i = 0; i < productFileList.size() ; i++)
-				{
-					//if( i != 4 ) // SD500과 Ipod 는 리뷰 구분이 안되있는 문서라서 일단 배제
+				{	
 						allDoc += TxtReader.readFileToReview(productFileList.get(i).getPath(),domainEntity, i);
-					//System.out.println(domainEntity[i]);
 				}
 
 				
@@ -121,13 +119,6 @@ public class targetModuleRunner implements ModuleRunner {
 						targetDomain = domainEntity[i];
 				}		
 				coOccurOpinion.txtToSenti(text, pipeline);
-				
-				System.out.println("input target domain : "+ targetDomain);
-							
-//				phone[3] = 0.4;
-//				phone[6] += 2;
-//				phone[7] += 2;
-				
 				
 				
 				
@@ -162,24 +153,19 @@ public class targetModuleRunner implements ModuleRunner {
 						// 1 평가시 도메인 단어 바꿔야됨
 						if( a.pmiVectorSimilarity(dv[domainToNum.get(targetDomain)]) > pmi && coOccurOpinion.probOfSenti(a.word) > co_occurrence ){  //phone -> target 파일의 도메인을 domain list 번호로 매치해서
 							
-							jsonResult.append("{\"opinion target\":\"" + a.word + "\"},");
-							
-							totalPrintWords++;
-							
+							jsonResult.append("{\"opinion target\":\"" + a.word + "\"},");							
+							totalPrintWords++;			
 							sb.append("\n");
 							sb.append(a);
 							sb.append("\n");
-							
-							// 뽑혀진 단어마다 스코어 체크용
-							//sb.append(a.pmiVectorSimilarity(dv[domainToNum.get(targetDomain)])+"  " + coOccurOpinion.probOfSenti(a.word));
-							sb.append("\n");
-							sb.append("\n");
+
 						}
 					}
 				}
 
-				System.out.println(jsonResult.substring( 0, jsonResult.length()-1)+"]}}");
-				System.out.println(totalPrintWords);
+//				System.out.println(jsonResult.substring( 0, jsonResult.length()-1)+"]}}");
+//				System.out.println(totalPrintWords);
+				System.out.println("The anlysis has been done.");
 				output.write(sb.toString());
 				
 			} catch (IOException e) {

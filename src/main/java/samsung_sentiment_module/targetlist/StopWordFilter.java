@@ -3,8 +3,16 @@ package samsung_sentiment_module.targetlist;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
+
+import samsung_sentiment_module.hierarchy.FeatureExtractor;
 
 public class StopWordFilter {
 	
@@ -14,7 +22,7 @@ public class StopWordFilter {
 	
 	public static void runStopWord(){
 		
-		readFile("main/resources/stopwordlist");
+		readFile("stopwordlist");
 	}
 	
 	public String stopRemoval(String line){
@@ -24,9 +32,20 @@ public class StopWordFilter {
 	}
 	
 	public static void readFile(String inputFileName){
-	    try {
+		
+		URL stopUrl = FeatureExtractor.class.getClassLoader().getResource("stopwordlist");
+		Path stopFile = null;
+		try {
+			stopFile = Paths.get(stopUrl.toURI());
+		} catch (URISyntaxException e) {
+			e.printStackTrace();
+		}
+		
+		
+	    try(BufferedReader in = Files.newBufferedReader(stopFile,
+				StandardCharsets.UTF_8)) {
 
-	        BufferedReader in = new BufferedReader(new FileReader(inputFileName));
+	       // BufferedReader in = new BufferedReader(new FileReader(inputFileName));
 	        String s;
 
 	        while ((s = in.readLine()) != null) {

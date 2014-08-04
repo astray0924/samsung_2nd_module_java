@@ -36,6 +36,9 @@ import samsung_sentiment_module.abs.ModuleRunner;
 import samsung_sentiment_module.hierarchy.FeatureExtractor;
 import edu.stanford.nlp.io.IOUtils;
 import edu.stanford.nlp.ling.CoreAnnotations;
+import edu.stanford.nlp.ling.CoreAnnotations.PartOfSpeechAnnotation;
+import edu.stanford.nlp.ling.CoreAnnotations.TextAnnotation;
+import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.Label;
 import edu.stanford.nlp.ling.Sentence;
@@ -74,7 +77,9 @@ public class SentimentPipeline implements ModuleRunner {
 	private static final NumberFormat NF = new DecimalFormat("0.0000");
 
 	private static List<String> targetList = new ArrayList<String>();
-
+	private final static String posPath =  "./temp/" + "tagged.pos";
+	
+	static LexicalizedParser parser;
 	static StanfordCoreNLP pipeline;
 	static Tagger_IRNLP irnlp;
 
@@ -98,7 +103,8 @@ public class SentimentPipeline implements ModuleRunner {
 			props.setProperty("annotators",
 					"tokenize, ssplit, parse, sentiment");
 		}
-
+		this.parser = LexicalizedParser.getParserFromFile(
+				DefaultPaths.DEFAULT_PARSER_MODEL, new Options());
 		this.pipeline = new StanfordCoreNLP(props);
 		this.irnlp = new Tagger_IRNLP();
 
@@ -169,9 +175,7 @@ public class SentimentPipeline implements ModuleRunner {
 			return index;
 		}
 
-		// out.print("  " + index + ":");
 
-		// out.println();
 		index++;
 		for (Tree child : tree.children()) {
 			index = outputTreeVectors(out, child, index);
@@ -216,10 +220,7 @@ public class SentimentPipeline implements ModuleRunner {
 		if (index == num) {
 
 			for (int i = 0; i < vector.getNumElements(); ++i) {
-				// out.print("index== num 일때 ");
 				c.polar[i] = Float.parseFloat(NF.format(vector.get(i)));
-				// System.out.println(" "+c.polar[i]);
-
 			}
 		}
 		// out.println();
@@ -346,6 +347,7 @@ public class SentimentPipeline implements ModuleRunner {
 	public static void parsing_sentence(String textDoc, String outputFileName,
 			StringBuffer sb, boolean threeClass) throws IOException {
 
+		
 		String regex = "(<sentence)(.+?)(</sentence>)"; // <S> ~ </S>
 
 		Pattern p = Pattern.compile(regex, Pattern.CASE_INSENSITIVE
@@ -389,7 +391,6 @@ public class SentimentPipeline implements ModuleRunner {
 			g = g.replaceAll("   ", " ");
 			g = g.trim();
 
-
 			int non = 0;
 			non = treeBank(g, adj_list, adjMap, nnMap, outputFileName, sb,
 					threeClass);
@@ -418,13 +419,15 @@ public class SentimentPipeline implements ModuleRunner {
 		String line = s;
 		String result = "";
 		if (line.length() > 0) {
-
+			
+			
 			Annotation annotation = pipeline.process(line);
-
+			
+			
 			int numSen = 0;
 			int adjNumOfFirst = 0;
-			for (CoreMap sentence : annotation
-					.get(CoreAnnotations.SentencesAnnotation.class)) {
+			StringBuilder stb = new StringBuilder();
+			for (CoreMap sentence : annotation.get(CoreAnnotations.SentencesAnnotation.class)) {
 				if (numSen == 0) {
 					for (int k = 0; k < adj_list.size(); k++) {
 						String adj = adj_list.get(k);
@@ -434,12 +437,12 @@ public class SentimentPipeline implements ModuleRunner {
 				}
 				numSen++;
 			}
+			
+			
 			if (numSen > 1) //exception handling
 				return 1;
 
 			// dependency parser loading
-			LexicalizedParser parser = LexicalizedParser.getParserFromFile(
-					DefaultPaths.DEFAULT_PARSER_MODEL, new Options());
 
 			int check = 0;
 			for (CoreMap sentence : annotation
@@ -492,7 +495,7 @@ public class SentimentPipeline implements ModuleRunner {
 					int sub_end = result.indexOf(adj, start);
 
 					if (sub_end == -1) {
-						// System.out.println("failed search for " + adj);
+						 System.out.println("failed search for " + adj);
 					} else {
 						String senti = result.substring(sub_end - 2,
 								sub_end - 1);
@@ -693,14 +696,26 @@ public class SentimentPipeline implements ModuleRunner {
 			
 			
 			/* pos tagging, module 3에 전달 */
-			BufferedWriter outputPOS = new BufferedWriter(new FileWriter("./temp/" + "tagged.pos"));
 			String t = Tagger_IRNLP.tagger2(file.getCanonicalPath());
-			outputPOS.write(t);
+			Annotation annotation = pipeline.process(t);
+			
+			StringBuilder stb = new StringBuilder();
+			for (CoreMap sentence : annotation.get(CoreAnnotations.SentencesAnnotation.class)) {
+				for(CoreLabel token: sentence.get(TokensAnnotation.class)){
+					
+			        String word = token.get(TextAnnotation.class);
+					String pos = token.get(PartOfSpeechAnnotation.class);
+					stb.append(word+"/"+pos+" ");
+				}
+				stb.append("\n");
+			}
+//			System.out.println("test");
+//			System.out.println(stb.toString());
+			
+			BufferedWriter outputPOS = new BufferedWriter(new FileWriter(posPath));
+			outputPOS.write(stb.toString());
 			outputPOS.close();
 
-			
-			// if(i !=0 ) //file path 배열의 , 구분
-			// sb.append(",");
 
 			String fileName = "\"" + file.getName() + "\""; // file path value
 			sb.append("{\"file name\":" + fileName); // file path 객체 시작
@@ -743,19 +758,11 @@ public class SentimentPipeline implements ModuleRunner {
 
 		inputDirPath = inputDirPath.substring(0, inputDirPath.length());
 
-		System.out.println(sentiOption);
-		System.out.println(inputDirPath);
-		System.out.println(outputDirPath);
-
 		if (sentiOption.contains("-targetlist")) {
 
 			String productFileName = prop.readLine().toString().trim();
 			String pmi = prop.readLine().toString().trim();
 			String co_occ = prop.readLine().toString().trim();
-
-			// samsung_sentiment_module.targetlist.Main.senti("-targetlist",
-			// inputDirPath, outputDirPath, productFileName,
-			// Double.parseDouble(pmi), Double.parseDouble(co_occ));
 
 		}
 
@@ -779,14 +786,14 @@ public class SentimentPipeline implements ModuleRunner {
 
 			doc += TxtReader.readFile(f.getCanonicalPath());
 		}
-		System.out.println(doc);
+
 
 		for (int i = 0; i < targetList.size(); i++) {
 			int freq = doc.split(targetList.get(i)).length - 1;
 			sb.append(targetList.get(i) + "\t" + freq + "\n");
 
 		}
-		System.out.println(sb.toString());
+
 		
 		BufferedWriter output = new BufferedWriter(new FileWriter(outputDirPath+"/targetlist"));
 
@@ -845,7 +852,6 @@ public class SentimentPipeline implements ModuleRunner {
 			parsing_sentence(taggedDoc, outputFileName, sb, threeClass);
 
 			if ((sb.substring(sb.length() - 1)).contains(",")) {
-				// System.out.println(sb.substring(sb.length()-1));
 				sb.deleteCharAt(sb.length() - 1); // 마지막 문장 , 예외처리
 
 			}
@@ -935,7 +941,7 @@ public class SentimentPipeline implements ModuleRunner {
 		boolean threeClass = true;
 		if(fineGrained==null)
 			threeClass = true;
-		else if(fineGrained.contains("fine"))
+		else if(fineGrained.contains("Y"))
 			threeClass = false;
 
 		try {

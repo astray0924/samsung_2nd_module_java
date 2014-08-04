@@ -1,4 +1,4 @@
-package samsung_sentiment_module.targetlist;
+﻿package samsung_sentiment_module.targetlist;
 
 import java.io.BufferedReader;
 import java.io.File;
