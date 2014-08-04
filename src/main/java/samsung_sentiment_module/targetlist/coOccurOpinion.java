@@ -8,9 +8,39 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 
+//import org.apache.xpath.operations.String;
+
+import edu.stanford.nlp.pipeline.StanfordCoreNLP;
+
 public class coOccurOpinion {
 
 	public static String text[];
+		
+	public static void txtToSenti(String[] ori, StanfordCoreNLP pipeline){
+		
+		text = new String[ori.length];
+
+		for(int i = 0; i < ori.length ; i++){
+			
+			StringReader sr = new StringReader(ori[i]);
+			BufferedReader br = new BufferedReader(sr);
+			String line = null;
+		
+			try {
+				
+				while( (line = br.readLine()) != null){
+					text[i] += extSentiAdj.sentiResult(line, pipeline);
+					
+					
+				}
+			}
+			catch(Exception e){
+			}
+			
+		}
+		
+		
+	}
 	
 	public static void co_occur(){
 				

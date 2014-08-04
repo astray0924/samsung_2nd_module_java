@@ -574,7 +574,6 @@ public class SentimentPipeline implements SamsungModule {
 		            	
 	            	}
 	            	
-	            	
 	            	//System.out.println("("+noun+","+adj+","+senti +")" );
 	            	}
 	            	
@@ -597,11 +596,8 @@ public class SentimentPipeline implements SamsungModule {
 	          // used for line-by-line text processing
 	         // System.out.println("");
 	        }
-	        
-	        
+ 
 			return 0;
-	      
-	      
 	    
 	  }
   
@@ -712,6 +708,8 @@ public class SentimentPipeline implements SamsungModule {
 	  
   }
 	
+  
+  // 최종결과물에선 property 파일 직접 사용 안함
   public static void senti(String property)throws IOException, ClassNotFoundException{
 	  
 	  String sentiOption = "";
@@ -736,7 +734,7 @@ public class SentimentPipeline implements SamsungModule {
 		  String pmi = prop.readLine().toString().trim(); 
 		  String co_occ = prop.readLine().toString().trim(); 
 		  
-		  samsung_sentiment_module.targetlist.Main.senti("-targetlist", inputDirPath, outputDirPath, productFileName, Double.parseDouble(pmi), Double.parseDouble(co_occ));
+		  //samsung_sentiment_module.targetlist.Main.senti("-targetlist", inputDirPath, outputDirPath, productFileName, Double.parseDouble(pmi), Double.parseDouble(co_occ));
 		  
 	  }
 	  
@@ -751,6 +749,7 @@ public class SentimentPipeline implements SamsungModule {
   
 	  
   }
+  
   private static void targetListWrite(String outputDirPath) throws IOException{
 		StringBuilder sb = new StringBuilder();
 		List<File> files = addPosFile(outputDirPath);
@@ -759,8 +758,7 @@ public class SentimentPipeline implements SamsungModule {
 		for(int i = 0 ; i < files.size() ; i++){
 			File f = files.get(i);
 			
-			doc += TxtReader.readFile(f.getCanonicalPath());
-			
+			doc += TxtReader.readFile(f.getCanonicalPath());	
 		}
 		System.out.println(doc);
 		
@@ -776,8 +774,8 @@ public class SentimentPipeline implements SamsungModule {
 
 		output.write(sb.toString());
 		output.close();
-
   }
+  
   private static List<File> addPosFile(String dirName) {
 		File root = new File(dirName);
 		List<File> files = new ArrayList<File>();
@@ -998,7 +996,7 @@ public class SentimentPipeline implements SamsungModule {
 				  System.exit(0);			  
 				  
 			  }
-				  
+			/*	  
 			  try {
 				samsung_sentiment_module.targetlist.Main.senti("-targetlist", inputDirPath, outputDirPath, args[3], Double.parseDouble(args[4]), Double.parseDouble(args[5]));
 			} catch (NumberFormatException e) {
@@ -1007,7 +1005,7 @@ public class SentimentPipeline implements SamsungModule {
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			}
+			}*/
 			  
 		  }
 		  

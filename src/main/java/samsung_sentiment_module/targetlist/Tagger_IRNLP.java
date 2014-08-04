@@ -45,9 +45,7 @@ public class Tagger_IRNLP {
 
 		// 문장 태깅 
 		String tagged = tagger.tagString(raw);
-		tagged = setRootTag(tagged);
-		System.out.println(tagged);
-	    //System.out.println(tagged);		
+		tagged = setRootTag(tagged);	
 		// 명사 추출 
 		readXML(tagged, nounList, fileNum , pipeline);
 	
@@ -81,11 +79,9 @@ public class Tagger_IRNLP {
 			for (int temp = 0; temp < nList.getLength(); temp++) {
 				 
 				Node nNode = nList.item(temp);	 
-			//	System.out.println("\nCurrent Element :" + nNode.getNodeName());
 		 
 				if (nNode.getNodeType() == Node.ELEMENT_NODE) { 
-					Element eElement = (Element) nNode;	 
-			//		System.out.println("sentence id : " + eElement.getAttribute("id"));				
+					Element eElement = (Element) nNode;	 			
 					int sentNum = Integer.parseInt(eElement.getAttribute("id"));
 					
 					NodeList words =  eElement.getElementsByTagName("word");
@@ -113,7 +109,6 @@ public class Tagger_IRNLP {
 	    NamedNodeMap attributes;
 	    // sentiment 모듈에 의한 트리 결과 얻기
 	    extSentiAdj esa = new extSentiAdj();
-	    System.out.println(rawSent);
         String sentiTree = 	esa.sentiResult(rawSent,pipeline);
         List<Integer> sentiPosition = new ArrayList<Integer>();
         String savedSentiTree = sentiTree;
@@ -167,10 +162,8 @@ public class Tagger_IRNLP {
             attr = (Attr) attributes.item(1);
             int tokenNumber = Integer.parseInt(attr.getNodeValue());
             String word = element.getTextContent();
-//            System.out.println("word is    :" + word);
-//            System.out.println("pos tag is :" + posTag);
-//            System.out.println("token Num  :" + tokenNumber);
-//            
+
+            
             /*
              * 명사만 추출 ( 일단 pos에 NN을 포함하는 단어만 )
              * */
