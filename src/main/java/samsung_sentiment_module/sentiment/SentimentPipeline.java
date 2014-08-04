@@ -28,7 +28,7 @@ import net.sourceforge.argparse4j.inf.Namespace;
 
 import org.ejml.simple.SimpleMatrix;
 
-import samsung_sentiment_module.SamsungModule;
+import samsung_sentiment_module.SamsungModuleRunner;
 import edu.stanford.nlp.io.IOUtils;
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
@@ -65,7 +65,7 @@ import edu.stanford.nlp.util.Generics;
  * @author John Bauer
  */
 
-public class SentimentPipeline implements SamsungModule {
+public class SentimentPipeline implements SamsungModuleRunner {
 	private static final NumberFormat NF = new DecimalFormat("0.0000");
 
 	static class PolarityProb {

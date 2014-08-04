@@ -42,7 +42,7 @@ public class Main {
 		}
 
 		// switch 문으로 선택된 모듈 실행
-		SamsungModule module = null;
+		SamsungModuleRunner module = null;
 
 		switch (mode) {
 		case SENTI: // 감성 분석 모듈
@@ -79,6 +79,7 @@ public class Main {
 				.type(String.class).nargs("?")
 				.help("the path of output directory");
 		parser.addArgument("-classnum", "--number_of_classes")
+				.dest("classNum")
 				.metavar("N")
 				.type(Integer.class)
 				.nargs("?")
@@ -90,21 +91,25 @@ public class Main {
 				.nargs("?")
 				.help("the path of target domain file\n(used in target_module)");
 		parser.addArgument("-pmi_thres", "--pmi_threshold")
-				.metavar("<thres_val>").type(Float.class).nargs("?")
-				.setDefault(0.0F)
+				.dest("pmiThreshold").metavar("<thres_val>").type(Float.class)
+				.nargs("?").setDefault(0.0F)
 				.help("the PMI threshold\n(used in target_module)");
 		parser.addArgument("-co_thres", "--co_occurrence_threshold")
-				.metavar("<thres_val>").type(Float.class).nargs("?")
-				.setDefault(0.0F)
+				.dest("coThreshold").metavar("<thres_val>").type(Float.class)
+				.nargs("?").setDefault(0.0F)
 				.help("the co-occurrence threshold\n(used in target_module)");
 		parser.addArgument("-centroid", "--centroidFilePath")
 				.metavar("<file_path>").type(String.class).nargs("?")
 				.help("the path of centroid file\n(used in hierarchy_module)");
+		parser.addArgument("-cache", "--loadCachedVectorDirPath")
+				.metavar("<cache_dir>").type(String.class).nargs("?")
+				.help("the path of cached vectors' directory");
 
 		String example = "example:\n"
 				+ "\tsenti_module: java -jar <jar_file> -m senti -i ./input -o ./output -classnum 3\n"
 				+ "\ttarget_module: java -jar <jar_file> \n"
-				+ "\thierarchy_module: java -jar <jar_file> -m hierarchy -centroid centroids.txt -o ./output\n";
+				+ "\thierarchy_module: java -jar <jar_file> -m hierarchy -centroid centroids.txt -o ./output\n"
+				+ "java -jar <jar_file> -m hierarchy -centroid centroids.txt -o ./output -cache ./output/vectors";
 		parser.epilog(example);
 
 		return parser;

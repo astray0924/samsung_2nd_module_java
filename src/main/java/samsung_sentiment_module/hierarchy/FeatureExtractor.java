@@ -168,7 +168,7 @@ public class FeatureExtractor {
 	public void deserializeOutputs() throws ClassNotFoundException, IOException {
 		FileInputStream fis = null;
 		ObjectInputStream ois = null;
-		Path dir = Paths.get("output/serializables");
+		Path dir = Paths.get("output/vectors");
 
 		if (!Files.exists(dir)) {
 			throw new IllegalStateException("Serialized outputs aren't exist!");
@@ -203,7 +203,7 @@ public class FeatureExtractor {
 	public void serializeOutputs() throws IOException {
 		FileOutputStream fos = null;
 		ObjectOutputStream oos = null;
-		Path dir = Paths.get("output/serializables");
+		Path dir = Paths.get("output/vectors");
 		if (!Files.isDirectory(dir)) {
 			Files.createDirectories(dir);
 		}
