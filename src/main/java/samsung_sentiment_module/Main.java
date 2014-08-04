@@ -8,59 +8,11 @@ import samsung_sentiment_module.hierarchy.HierarchyModuleRunner;
 import samsung_sentiment_module.sentiment.SentimentPipeline;
 
 public class Main {
+	private static ArgumentParser parser = null;
+
 	private enum Module {
 		SENTI, TARGET, HIERARCHY
 	};
-
-	private static ArgumentParser parser = null;
-
-	private static ArgumentParser initArgumentParser() {
-		ArgumentParser parser = ArgumentParsers.newArgumentParser(
-				"sentiment module").description("samsung sentiment module");
-
-		parser.addArgument("-m", "--mode")
-				.metavar("senti | target | hierarchy").type(String.class)
-				.nargs("?")
-				.help("the module to run: senti | target | hierarchy");
-		parser.addArgument("-i", "--inputDirPath")
-				.metavar("<file_path>")
-				.type(String.class)
-				.nargs("?")
-				.help("the path of input directory \n(required for senti and target module)");
-		parser.addArgument("-o", "--outputDirPath").metavar("outputDirPath")
-				.type(String.class).nargs("?")
-				.help("the path of output directory");
-		parser.addArgument("-classnum", "--number_of_classes")
-				.metavar("N")
-				.type(Integer.class)
-				.nargs("?")
-				.setDefault(2)
-				.help("the number of sentiment classes to be used\n(2: [+/-] OR 3: [+/-/0])\n(used in senti_module)");
-		parser.addArgument("-target_domain", "--targetDomainFilePath")
-				.metavar("<file_path>")
-				.type(String.class)
-				.nargs("?")
-				.help("the path of target domain file\n(used in target_module)");
-		parser.addArgument("-pmi_thres", "--pmi_threshold")
-				.metavar("<thres_val>").type(Float.class).nargs("?")
-				.setDefault(0.0F)
-				.help("the PMI threshold\n(used in target_module)");
-		parser.addArgument("-co_thres", "--co_occurrence_threshold")
-				.metavar("<thres_val>").type(Float.class).nargs("?")
-				.setDefault(0.0F)
-				.help("the co-occurrence threshold\n(used in target_module)");
-		parser.addArgument("-centroid", "--centroidFilePath")
-				.metavar("<file_path>").type(String.class).nargs("?")
-				.help("the path of centroid file\n(used in hierarchy_module)");
-
-		String example = "example:\n"
-				+ "\tsenti_module: java -jar <jar_file> -m senti -i ./input -o ./output -classnum 3\n"
-				+ "\ttarget_module: java -jar <jar_file> \n"
-				+ "\thierarchy_module: java -jar <jar_file> \n";
-		parser.epilog(example);
-
-		return parser;
-	}
 
 	public static void main(String[] args) throws ClassNotFoundException {
 		// 옵션 parser 구현
@@ -108,5 +60,53 @@ public class Main {
 		default:
 			break;
 		}
+	}
+
+	private static ArgumentParser initArgumentParser() {
+		ArgumentParser parser = ArgumentParsers.newArgumentParser(
+				"sentiment module").description("samsung sentiment module");
+
+		parser.addArgument("-m", "--mode")
+				.metavar("senti | target | hierarchy").type(String.class)
+				.nargs("?")
+				.help("the module to run: senti | target | hierarchy");
+		parser.addArgument("-i", "--inputDirPath")
+				.metavar("<file_path>")
+				.type(String.class)
+				.nargs("?")
+				.help("the path of input directory \n(required for senti and target module)");
+		parser.addArgument("-o", "--outputDirPath").metavar("outputDirPath")
+				.type(String.class).nargs("?")
+				.help("the path of output directory");
+		parser.addArgument("-classnum", "--number_of_classes")
+				.metavar("N")
+				.type(Integer.class)
+				.nargs("?")
+				.setDefault(2)
+				.help("the number of sentiment classes to be used\n(2: [+/-] OR 3: [+/-/0])\n(used in senti_module)");
+		parser.addArgument("-target_domain", "--targetDomainFilePath")
+				.metavar("<file_path>")
+				.type(String.class)
+				.nargs("?")
+				.help("the path of target domain file\n(used in target_module)");
+		parser.addArgument("-pmi_thres", "--pmi_threshold")
+				.metavar("<thres_val>").type(Float.class).nargs("?")
+				.setDefault(0.0F)
+				.help("the PMI threshold\n(used in target_module)");
+		parser.addArgument("-co_thres", "--co_occurrence_threshold")
+				.metavar("<thres_val>").type(Float.class).nargs("?")
+				.setDefault(0.0F)
+				.help("the co-occurrence threshold\n(used in target_module)");
+		parser.addArgument("-centroid", "--centroidFilePath")
+				.metavar("<file_path>").type(String.class).nargs("?")
+				.help("the path of centroid file\n(used in hierarchy_module)");
+
+		String example = "example:\n"
+				+ "\tsenti_module: java -jar <jar_file> -m senti -i ./input -o ./output -classnum 3\n"
+				+ "\ttarget_module: java -jar <jar_file> \n"
+				+ "\thierarchy_module: java -jar <jar_file> -m hierarchy -centroid centroids.txt -o ./output\n";
+		parser.epilog(example);
+
+		return parser;
 	}
 }
