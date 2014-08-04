@@ -14,7 +14,7 @@ public class StopWordFilter {
 	
 	public static void runStopWord(){
 		
-		readFile("resources/stopwordlist");
+		readFile("main/resources/stopwordlist");
 	}
 	
 	public String stopRemoval(String line){

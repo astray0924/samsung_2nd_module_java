@@ -10,6 +10,10 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -443,12 +447,9 @@ public class SentimentPipeline implements ModuleRunner {
 
 				Tree parseTree = parser.parse(sentence.toString());
 
-				//System.out.println("input sentence : " + sentence.toString());
 				Tree t = outputLabelTree(System.out, sentence, outputFormats);
 
 				result = t.toString();
-				//System.out.println("result :: " + result);
-				// outputTree(System.out, sentence, outputFormats);
 
 				String sentPolarity = result.substring(1, 2);
 
@@ -483,14 +484,11 @@ public class SentimentPipeline implements ModuleRunner {
 							if (st.charAt(j) == '(')
 								adj_index++;
 						}
-						// System.out.println( adj_list.get(i) +
-						// "'s index is : " + adj_index);
 					}
 
 					PolarityProb c = outputProbability(System.out, sentence,
 							outputFormats, adj_index - 1);
 
-					// System.out.println("search for adj : " + adj);
 					int sub_end = result.indexOf(adj, start);
 
 					if (sub_end == -1) {
@@ -535,8 +533,6 @@ public class SentimentPipeline implements ModuleRunner {
 
 						/* 파일 출력 */
 						if (isNetral(c)) {
-
-							System.out.println("pair : " + adj + " , " + noun);
 
 							if (!targetList.contains(noun))
 								targetList.add(noun);
@@ -672,26 +668,37 @@ public class SentimentPipeline implements ModuleRunner {
 					outputFileName)); // output directory
 			sb.append("{\"document\":["); // document 배열 시작
 
-			// System.out.println("File num is" + i);
+
 			BufferedReader input = new BufferedReader(new InputStreamReader(
 					new FileInputStream(file), "UTF-8"));
 
-			// System.out.println(file.getCanonicalPath());
-			String taggedDoc = irnlp.tagger(file.getCanonicalPath()); // file 의
-																		// path를
-																		// 받아서
-																		// tagged
-																		// string
-																		// 리턴
-			// System.out.println(taggedDoc);
 
+			String taggedDoc = irnlp.tagger(file.getCanonicalPath()); 
+			
+			//temp 파일 없으면 생성
+			Path outputPath = null;
+			try {
+				outputPath = Paths.get("temp");
+				if (!Files.exists(outputPath)) {
+					Files.createDirectories(outputPath);
+				}
+
+			} catch (NullPointerException e) {
+				// System.err.println();
+			} catch (InvalidPathException e) {
+
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
+			
 			/* pos tagging, module 3에 전달 */
-			BufferedWriter outputPOS = new BufferedWriter(new FileWriter(
-					outputFileName + ".pos"));
+			BufferedWriter outputPOS = new BufferedWriter(new FileWriter("./temp/" + "tagged.pos"));
 			String t = Tagger_IRNLP.tagger2(file.getCanonicalPath());
 			outputPOS.write(t);
 			outputPOS.close();
 
+			
 			// if(i !=0 ) //file path 배열의 , 구분
 			// sb.append(",");
 
@@ -702,7 +709,6 @@ public class SentimentPipeline implements ModuleRunner {
 			parsing_sentence(taggedDoc, outputFileName, sb, threeClass);
 
 			if ((sb.substring(sb.length() - 1)).contains(",")) {
-				// System.out.println(sb.substring(sb.length()-1));
 				sb.deleteCharAt(sb.length() - 1); // 마지막 문장 , 예외처리
 
 			}
@@ -781,8 +787,8 @@ public class SentimentPipeline implements ModuleRunner {
 
 		}
 		System.out.println(sb.toString());
-
-		BufferedWriter output = new BufferedWriter(new FileWriter("./temp/targetlist"));
+		
+		BufferedWriter output = new BufferedWriter(new FileWriter(outputDirPath+"/targetlist"));
 
 		output.write(sb.toString());
 		output.close();
@@ -821,21 +827,16 @@ public class SentimentPipeline implements ModuleRunner {
 					outputFileName)); // output directory
 			sb.append("{\"document\":["); // document 배열 시작
 
-			// System.out.println("File num is" + i);
 			BufferedReader input = new BufferedReader(new InputStreamReader(
 					new FileInputStream(file), "UTF-8"));
 
-			// System.out.println(file.getCanonicalPath());
+
 			String taggedDoc = irnlp.tagger(file.getCanonicalPath()); // file 의
 																		// path를
 																		// 받아서
 																		// tagged
 																		// string
 																		// 리턴
-			// System.out.println(taggedDoc);
-
-			// if(i !=0 ) //file path 배열의 , 구분
-			// sb.append(",");
 
 			String fileName = "\"" + file.getName() + "\""; // file path value
 			sb.append("{\"file name\":" + fileName); // file path 객체 시작
@@ -939,6 +940,7 @@ public class SentimentPipeline implements ModuleRunner {
 
 		try {
 			senti(inputDirPath, outputDirPath, threeClass);
+			targetListWrite("temp");
 		} catch (ClassNotFoundException | IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

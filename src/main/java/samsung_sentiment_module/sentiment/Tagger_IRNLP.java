@@ -31,7 +31,6 @@ public class Tagger_IRNLP {
 		String raw = TxtReader.readFile(inputFile);  // 각각의 file path
 
 		String tagged = tagger.tagString(raw);
-		System.out.println(tagged);
 		
 		return tagged;
 
@@ -47,8 +46,6 @@ public class Tagger_IRNLP {
 	String raw = TxtReader.readFile(inputFile);  // 각각의 file path
 	
 	String tagged = tagger.tagString(raw);
-	System.out.println(tagged);
-	
 	
 	return tagged;
 	
