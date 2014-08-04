@@ -21,7 +21,8 @@ public class Main {
 				.nargs("?")
 				.help("the property file path\n(it overrides the command line arguments)");
 
-		Subparsers subparsers = parser.addSubparsers().help("module to run");
+		Subparsers subparsers = parser.addSubparsers().help("module to run")
+				.dest("Module");
 
 		// Sentiment
 		Subparser parserSentiment = subparsers.addParser("Sentiment").help(
