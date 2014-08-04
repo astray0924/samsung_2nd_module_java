@@ -78,6 +78,8 @@ public class SentimentPipeline implements ModuleRunner {
 
 	private static List<String> targetList = new ArrayList<String>();
 	private final static String posPath =  "./temp/" + "tagged.pos";
+	
+	static LexicalizedParser parser;
 	static StanfordCoreNLP pipeline;
 	static Tagger_IRNLP irnlp;
 
@@ -101,7 +103,8 @@ public class SentimentPipeline implements ModuleRunner {
 			props.setProperty("annotators",
 					"tokenize, ssplit, parse, sentiment");
 		}
-
+		this.parser = LexicalizedParser.getParserFromFile(
+				DefaultPaths.DEFAULT_PARSER_MODEL, new Options());
 		this.pipeline = new StanfordCoreNLP(props);
 		this.irnlp = new Tagger_IRNLP();
 
@@ -344,7 +347,6 @@ public class SentimentPipeline implements ModuleRunner {
 	public static void parsing_sentence(String textDoc, String outputFileName,
 			StringBuffer sb, boolean threeClass) throws IOException {
 
-
 		
 		String regex = "(<sentence)(.+?)(</sentence>)"; // <S> ~ </S>
 
@@ -389,7 +391,6 @@ public class SentimentPipeline implements ModuleRunner {
 			g = g.replaceAll("   ", " ");
 			g = g.trim();
 
-
 			int non = 0;
 			non = treeBank(g, adj_list, adjMap, nnMap, outputFileName, sb,
 					threeClass);
@@ -418,9 +419,11 @@ public class SentimentPipeline implements ModuleRunner {
 		String line = s;
 		String result = "";
 		if (line.length() > 0) {
-
+			
+			
 			Annotation annotation = pipeline.process(line);
-
+			
+			
 			int numSen = 0;
 			int adjNumOfFirst = 0;
 			StringBuilder stb = new StringBuilder();
@@ -435,15 +438,11 @@ public class SentimentPipeline implements ModuleRunner {
 				numSen++;
 			}
 			
-			System.out.println(stb.toString());
-			
 			
 			if (numSen > 1) //exception handling
 				return 1;
 
 			// dependency parser loading
-			LexicalizedParser parser = LexicalizedParser.getParserFromFile(
-					DefaultPaths.DEFAULT_PARSER_MODEL, new Options());
 
 			int check = 0;
 			for (CoreMap sentence : annotation
@@ -699,7 +698,7 @@ public class SentimentPipeline implements ModuleRunner {
 			/* pos tagging, module 3에 전달 */
 			String t = Tagger_IRNLP.tagger2(file.getCanonicalPath());
 			Annotation annotation = pipeline.process(t);
-
+			
 			StringBuilder stb = new StringBuilder();
 			for (CoreMap sentence : annotation.get(CoreAnnotations.SentencesAnnotation.class)) {
 				for(CoreLabel token: sentence.get(TokensAnnotation.class)){
