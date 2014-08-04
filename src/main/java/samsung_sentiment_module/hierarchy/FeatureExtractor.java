@@ -20,6 +20,8 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.json.simple.JSONObject;
+
 import cc.mallet.types.Alphabet;
 import cc.mallet.types.FeatureVector;
 import cc.mallet.types.NormalizedDotProductMetric;
@@ -34,8 +36,8 @@ import com.google.common.collect.Ordering;
 import com.google.common.collect.TreeMultimap;
 
 public class FeatureExtractor {
-	private static final String INPUT_DIR_PATH = "resources/data";
-	private static final String DIC_DIR_PATH = "resources/dictionary";
+	private static final String INPUT_DIR_PATH = "src/main/resources/data";
+	private static final String DIC_DIR_PATH = "src/main/resources/dictionary";
 	private static final String POS_FILE = "pos_tagging.txt";
 	private String outputDirPath = null;
 	private String centroidFilePath = null;
@@ -314,15 +316,18 @@ public class FeatureExtractor {
 			Files.createDirectories(dir);
 		}
 
-		Path outputFile = dir.resolve(className + ".txt");
+		Path outputFile = dir.resolve(className + ".json");
+		JSONObject json = new JSONObject();
+		
 		try (BufferedWriter writer = Files.newBufferedWriter(outputFile,
 				StandardCharsets.UTF_8, StandardOpenOption.WRITE,
 				StandardOpenOption.CREATE)) {
 			for (Double t : sortedBySim.keySet()) {
-				String line = String.format("%s: %s\n", t, sortedBySim.get(t));
-				writer.write(line);
+				json.put(t, sortedBySim.get(t));
 			}
-		}
+			
+			json.writeJSONString(writer);
+		} 
 
 	}
 
