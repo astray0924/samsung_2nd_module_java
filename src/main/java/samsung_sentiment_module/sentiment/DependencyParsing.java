@@ -16,7 +16,6 @@ public class DependencyParsing {
 	public static void main(String[] args) throws Exception {
 		String sentence = "John loves the ice cream cake on my table.";
 		LexicalizedParser parser = LexicalizedParser.getParserFromFile(DefaultPaths.DEFAULT_PARSER_MODEL, new Options());
-		System.out.println("dfd");
 		
 		Tree parseTree = parser.parse(sentence);
 		System.out.println(printTree(parseTree, "typedDependencies"));

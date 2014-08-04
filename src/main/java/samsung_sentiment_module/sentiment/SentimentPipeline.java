@@ -169,9 +169,7 @@ public class SentimentPipeline implements ModuleRunner {
 			return index;
 		}
 
-		// out.print("  " + index + ":");
 
-		// out.println();
 		index++;
 		for (Tree child : tree.children()) {
 			index = outputTreeVectors(out, child, index);
@@ -216,10 +214,7 @@ public class SentimentPipeline implements ModuleRunner {
 		if (index == num) {
 
 			for (int i = 0; i < vector.getNumElements(); ++i) {
-				// out.print("index== num 일때 ");
 				c.polar[i] = Float.parseFloat(NF.format(vector.get(i)));
-				// System.out.println(" "+c.polar[i]);
-
 			}
 		}
 		// out.println();
@@ -492,7 +487,7 @@ public class SentimentPipeline implements ModuleRunner {
 					int sub_end = result.indexOf(adj, start);
 
 					if (sub_end == -1) {
-						// System.out.println("failed search for " + adj);
+						 System.out.println("failed search for " + adj);
 					} else {
 						String senti = result.substring(sub_end - 2,
 								sub_end - 1);
@@ -743,19 +738,11 @@ public class SentimentPipeline implements ModuleRunner {
 
 		inputDirPath = inputDirPath.substring(0, inputDirPath.length());
 
-		System.out.println(sentiOption);
-		System.out.println(inputDirPath);
-		System.out.println(outputDirPath);
-
 		if (sentiOption.contains("-targetlist")) {
 
 			String productFileName = prop.readLine().toString().trim();
 			String pmi = prop.readLine().toString().trim();
 			String co_occ = prop.readLine().toString().trim();
-
-			// samsung_sentiment_module.targetlist.Main.senti("-targetlist",
-			// inputDirPath, outputDirPath, productFileName,
-			// Double.parseDouble(pmi), Double.parseDouble(co_occ));
 
 		}
 
@@ -779,14 +766,14 @@ public class SentimentPipeline implements ModuleRunner {
 
 			doc += TxtReader.readFile(f.getCanonicalPath());
 		}
-		System.out.println(doc);
+
 
 		for (int i = 0; i < targetList.size(); i++) {
 			int freq = doc.split(targetList.get(i)).length - 1;
 			sb.append(targetList.get(i) + "\t" + freq + "\n");
 
 		}
-		System.out.println(sb.toString());
+
 		
 		BufferedWriter output = new BufferedWriter(new FileWriter(outputDirPath+"/targetlist"));
 
@@ -845,7 +832,6 @@ public class SentimentPipeline implements ModuleRunner {
 			parsing_sentence(taggedDoc, outputFileName, sb, threeClass);
 
 			if ((sb.substring(sb.length() - 1)).contains(",")) {
-				// System.out.println(sb.substring(sb.length()-1));
 				sb.deleteCharAt(sb.length() - 1); // 마지막 문장 , 예외처리
 
 			}
