@@ -2,12 +2,13 @@ package samsung_sentiment_module.hierarchy;
 
 import java.io.IOException;
 
+import net.sourceforge.argparse4j.inf.Namespace;
 import samsung_sentiment_module.SamsungModule;
 
 public class HierarchyModuleRunner implements SamsungModule {
 
 	@Override
-	public void run(String[] args) {
+	public void run(String[] args, Namespace parsedArgs) {
 		FeatureExtractor extractor = null;
 		try {
 			extractor = new FeatureExtractor();

@@ -4,6 +4,8 @@ import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
 import net.sourceforge.argparse4j.inf.Namespace;
+import samsung_sentiment_module.hierarchy.HierarchyModuleRunner;
+import samsung_sentiment_module.sentiment.SentimentPipeline;
 
 public class Main {
 	private enum Module {
@@ -79,33 +81,32 @@ public class Main {
 			modeString = parsedArgs.getString("mode");
 			mode = Module.valueOf(modeString.toUpperCase());
 		} catch (NullPointerException e) {
-			System.err.println("The running mode is not specified! (-m [senti|target|hierarchy])");
+			System.err
+					.println("The running mode is not specified! (-m [senti|target|hierarchy])");
 			System.exit(1);
 		} catch (IllegalArgumentException e) {
 			System.err.println("Unidentified mode: " + modeString);
 			System.exit(1);
 		}
 
-		// Module mode = Module.HIERARCHY;
-		//
-		// // switch 문으로 실행할 모듈 선택
-		// SamsungModule module = null;
-		//
-		// switch (mode) {
-		// case SENTI: // 감성 분석 모듈
-		// module = new SentimentPipeline();
-		// module.run(args);
-		// break;
-		// case TARGET: // 타겟 추출 모듈
-		// module = new SentimentPipeline();
-		// module.run(args);
-		// break;
-		// case HIERARCHY: // 타겟 구조 추정 모듈
-		// module = new HierarchyModuleRunner();
-		// module.run(args);
-		// break;
-		// default:
-		// break;
-		// }
+		// switch 문으로 선택된 모듈 실행
+		SamsungModule module = null;
+
+		switch (mode) {
+		case SENTI: // 감성 분석 모듈
+			module = new SentimentPipeline();
+			module.run(args, parsedArgs);
+			break;
+		case TARGET: // 타겟 추출 모듈
+			module = new SentimentPipeline();
+			module.run(args, parsedArgs);
+			break;
+		case HIERARCHY: // 타겟 구조 추정 모듈
+			module = new HierarchyModuleRunner();
+			module.run(args, parsedArgs);
+			break;
+		default:
+			break;
+		}
 	}
 }
