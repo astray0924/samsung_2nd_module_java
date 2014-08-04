@@ -1,17 +1,9 @@
 package samsung_sentiment_module;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
-import net.sourceforge.argparse4j.inf.ArgumentParserException;
 import net.sourceforge.argparse4j.inf.Namespace;
-import samsung_sentiment_module.abs.ModuleRunner;
-import samsung_sentiment_module.targetlist.*;
+import samsung_sentiment_module.targetlist.targetModuleRunner;
 
 public class Target {
 	public static void main(String[] args) {

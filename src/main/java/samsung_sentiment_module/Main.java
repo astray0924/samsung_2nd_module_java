@@ -9,9 +9,12 @@ public class Main {
 		ArgumentParser parser = ArgumentParsers
 				.newArgumentParser("Sentiment Module");
 
-		parser.addArgument("Module").metavar("Sentiment | Target | Hierarchy")
-				.type(String.class).nargs("?").help("the module to run");
+		parser.addArgument("Module")
+				.choices("Sentiment", "Target", "Hierarchy")
+				.metavar("Sentiment | Target | Hierarchy").type(String.class)
+				.nargs("?").help("the module to run");
 
+		// Property 파일
 	}
 
 }
