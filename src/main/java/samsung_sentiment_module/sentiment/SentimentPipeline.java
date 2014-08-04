@@ -36,6 +36,9 @@ import samsung_sentiment_module.abs.ModuleRunner;
 import samsung_sentiment_module.hierarchy.FeatureExtractor;
 import edu.stanford.nlp.io.IOUtils;
 import edu.stanford.nlp.ling.CoreAnnotations;
+import edu.stanford.nlp.ling.CoreAnnotations.PartOfSpeechAnnotation;
+import edu.stanford.nlp.ling.CoreAnnotations.TextAnnotation;
+import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.Label;
 import edu.stanford.nlp.ling.Sentence;
@@ -74,7 +77,7 @@ public class SentimentPipeline implements ModuleRunner {
 	private static final NumberFormat NF = new DecimalFormat("0.0000");
 
 	private static List<String> targetList = new ArrayList<String>();
-
+	private final static String posPath =  "./temp/" + "tagged.pos";
 	static StanfordCoreNLP pipeline;
 	static Tagger_IRNLP irnlp;
 
@@ -341,6 +344,8 @@ public class SentimentPipeline implements ModuleRunner {
 	public static void parsing_sentence(String textDoc, String outputFileName,
 			StringBuffer sb, boolean threeClass) throws IOException {
 
+
+		
 		String regex = "(<sentence)(.+?)(</sentence>)"; // <S> ~ </S>
 
 		Pattern p = Pattern.compile(regex, Pattern.CASE_INSENSITIVE
@@ -418,8 +423,8 @@ public class SentimentPipeline implements ModuleRunner {
 
 			int numSen = 0;
 			int adjNumOfFirst = 0;
-			for (CoreMap sentence : annotation
-					.get(CoreAnnotations.SentencesAnnotation.class)) {
+			StringBuilder stb = new StringBuilder();
+			for (CoreMap sentence : annotation.get(CoreAnnotations.SentencesAnnotation.class)) {
 				if (numSen == 0) {
 					for (int k = 0; k < adj_list.size(); k++) {
 						String adj = adj_list.get(k);
@@ -429,6 +434,10 @@ public class SentimentPipeline implements ModuleRunner {
 				}
 				numSen++;
 			}
+			
+			System.out.println(stb.toString());
+			
+			
 			if (numSen > 1) //exception handling
 				return 1;
 
@@ -688,14 +697,26 @@ public class SentimentPipeline implements ModuleRunner {
 			
 			
 			/* pos tagging, module 3에 전달 */
-			BufferedWriter outputPOS = new BufferedWriter(new FileWriter("./temp/" + "tagged.pos"));
 			String t = Tagger_IRNLP.tagger2(file.getCanonicalPath());
-			outputPOS.write(t);
+			Annotation annotation = pipeline.process(t);
+
+			StringBuilder stb = new StringBuilder();
+			for (CoreMap sentence : annotation.get(CoreAnnotations.SentencesAnnotation.class)) {
+				for(CoreLabel token: sentence.get(TokensAnnotation.class)){
+					
+			        String word = token.get(TextAnnotation.class);
+					String pos = token.get(PartOfSpeechAnnotation.class);
+					stb.append(word+"/"+pos+" ");
+				}
+				stb.append("\n");
+			}
+//			System.out.println("test");
+//			System.out.println(stb.toString());
+			
+			BufferedWriter outputPOS = new BufferedWriter(new FileWriter(posPath));
+			outputPOS.write(stb.toString());
 			outputPOS.close();
 
-			
-			// if(i !=0 ) //file path 배열의 , 구분
-			// sb.append(",");
 
 			String fileName = "\"" + file.getName() + "\""; // file path value
 			sb.append("{\"file name\":" + fileName); // file path 객체 시작

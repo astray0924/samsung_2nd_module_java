@@ -36,16 +36,10 @@ public class Tagger_IRNLP {
 	public static String tagger2(String inputFile) throws IOException,
 	ClassNotFoundException {
 
-	String model = "taggers/english-left3words-distsim.tagger";
-	TaggerConfig config = new TaggerConfig( "-sentenceDelimiter", "\n", "-tokenize", "false", "-tagSeparator", "/", 
-			"-model", model);
-	
-	MaxentTagger tagger = new MaxentTagger(model, config);
+
 	String raw = TxtReader.readFile(inputFile);  // 각각의 file path
-	
-	String tagged = tagger.tagString(raw);
-	
-	return tagged;
+	//System.out.println(tagged);
+	return raw;
 	
 	}	
 
