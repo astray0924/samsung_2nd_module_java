@@ -39,7 +39,7 @@ import com.google.common.collect.Ordering;
 import com.google.common.collect.TreeMultimap;
 
 public class FeatureExtractor {
-	private static final String INPUT_FILE_PATH = "./temp/tagged.pos";
+	private static final String INPUT_FILE_PATH = "./temp/tagged_big.pos";
 	private String outputDirPath = null;
 	private String centroidFilePath = null;
 
