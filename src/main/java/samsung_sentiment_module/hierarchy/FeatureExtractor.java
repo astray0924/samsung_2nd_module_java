@@ -247,7 +247,7 @@ public class FeatureExtractor {
 	public void saveCache() throws IOException {
 		FileOutputStream fos = null;
 		ObjectOutputStream oos = null;
-		Path dir = Paths.get("output/vectors");
+		Path dir = Paths.get("output/hierarchy_vectors");
 		if (!Files.isDirectory(dir)) {
 			Files.createDirectories(dir);
 		}
