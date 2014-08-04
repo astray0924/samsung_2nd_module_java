@@ -2,24 +2,36 @@ package samsung_sentiment_module.hierarchy;
 
 import java.io.IOException;
 
-import samsung_sentiment_module.SamsungModule;
+import net.sourceforge.argparse4j.inf.Namespace;
+import samsung_sentiment_module.abs.ModuleRunner;
 
-public class HierarchyModuleRunner implements SamsungModule {
+public class HierarchyModuleRunner implements ModuleRunner {
 
 	@Override
-	public void run(String[] args) {
+	public void run(String[] args, Namespace parsedArgs) {
 		FeatureExtractor extractor = null;
+		String outputDirPath = parsedArgs.getString("outputDirPath");
+		String centroidFilePath = parsedArgs.getString("centroidFilePath");
+		String cachePath = parsedArgs.getString("cacheDirPath");
+
 		try {
-			extractor = new FeatureExtractor();
-			extractor.extract();
-			extractor.vectorize();
-			// extractor.serializeOutputs();
-			// extractor.deserializeOutputs();
+			extractor = new FeatureExtractor(outputDirPath, centroidFilePath);
+
+			if (cachePath != null) {
+				extractor.loadCache(cachePath);
+			} else {
+				extractor.extract();
+				extractor.vectorize();
+				extractor.saveCache();
+			}
+
+			extractor.classifyAll();
+
 		} catch (IOException e1) {
 			e1.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
 		}
-
-		extractor.debugClassification("staff");
 
 	}
 

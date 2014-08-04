@@ -1,6 +1,7 @@
 package samsung_sentiment_module.hierarchy;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -10,7 +11,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collections;
+import java.nio.file.StandardOpenOption;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -33,9 +34,11 @@ import com.google.common.collect.Ordering;
 import com.google.common.collect.TreeMultimap;
 
 public class FeatureExtractor {
-	private static final String DATA_DIR = "resources/data";
-	private static final String DIC_DIR = "resources/dictionary";
-	private static final String DATA_POS = "pos_tagging.txt";
+	private static final String INPUT_DIR_PATH = "resources/data";
+	private static final String DIC_DIR_PATH = "resources/dictionary";
+	private static final String POS_FILE = "pos_tagging.txt";
+	private String outputDirPath = null;
+	private String centroidFilePath = null;
 
 	// 정규표현식
 	private static final String SENT_PATTERN_STRING = "\\b(\\w+/NN\\s?)+\\w+/VB[PZ]? (\\w+/RB\\s)?\\w+/JJ(\\s*,/, (\\w+/RB\\s)?\\w+/JJ(\\s,/,)?)*(\\s\\w+/CC (\\w+/RB\\s)?\\w+/JJ)?\\s";
@@ -66,9 +69,24 @@ public class FeatureExtractor {
 	private Map<String, HashMap<String, Double>> ppmiContexts = new HashMap<String, HashMap<String, Double>>();
 	private Map<String, FeatureVector> vectors = new HashMap<String, FeatureVector>();
 
-	public FeatureExtractor() throws IOException {
+	// 분류를 위한 centroid
+	private Map<String, String> centroids = new HashMap<String, String>();
+
+	public FeatureExtractor(String outputDirPath, String centroidFilePath)
+			throws IOException {
+		// output & centroid path
+		this.outputDirPath = outputDirPath;
+		this.centroidFilePath = centroidFilePath;
+
 		// populate stopwords
-		Path stopFile = Paths.get(DIC_DIR).resolve("stopwords.txt");
+		populateStopWords();
+
+		// populate centroids
+		populateCentroids();
+	}
+
+	protected void populateStopWords() throws IOException {
+		Path stopFile = Paths.get(DIC_DIR_PATH).resolve("stopwords.txt");
 		try (BufferedReader reader = Files.newBufferedReader(stopFile,
 				StandardCharsets.UTF_8)) {
 			String line = "";
@@ -78,6 +96,31 @@ public class FeatureExtractor {
 				stopwords.add(stopWord);
 			}
 		}
+	}
+
+	protected void populateCentroids() throws IOException {
+		Path centroidFile = Paths.get(centroidFilePath);
+		try (BufferedReader reader = Files.newBufferedReader(centroidFile,
+				StandardCharsets.UTF_8)) {
+			String line = "";
+			while ((line = reader.readLine()) != null) {
+				try {
+					String[] centroidTargetPair = line.trim().split("=");
+					String centroid = centroidTargetPair[0].trim();
+					String target = centroidTargetPair[1].toLowerCase().trim();
+
+					centroids.put(centroid, target);
+				} catch (IndexOutOfBoundsException e) {
+					System.out.println("Failed to parse the line: " + line);
+				} catch (NullPointerException e) {
+					System.out.println("Failed to parse the line: " + line);
+				}
+			}
+		}
+	}
+
+	protected void debugCentroids() {
+		System.out.println(centroids);
 	}
 
 	public Map<String, Multiset<String>> getCountContexts() {
@@ -165,13 +208,14 @@ public class FeatureExtractor {
 	}
 
 	@SuppressWarnings("unchecked")
-	public void deserializeOutputs() throws ClassNotFoundException, IOException {
+	public void loadCache(String cacheDir) throws ClassNotFoundException,
+			IOException {
 		FileInputStream fis = null;
 		ObjectInputStream ois = null;
-		Path dir = Paths.get("output/serializables");
+		Path dir = Paths.get(cacheDir);
 
 		if (!Files.exists(dir)) {
-			throw new IllegalStateException("Serialized outputs aren't exist!");
+			throw new IllegalStateException("Provided cache dir is invalid!");
 		}
 
 		// vocabulary
@@ -200,10 +244,10 @@ public class FeatureExtractor {
 		fis.close();
 	}
 
-	public void serializeOutputs() throws IOException {
+	public void saveCache() throws IOException {
 		FileOutputStream fos = null;
 		ObjectOutputStream oos = null;
-		Path dir = Paths.get("output/serializables");
+		Path dir = Paths.get("output/hierarchy_vectors");
 		if (!Files.isDirectory(dir)) {
 			Files.createDirectories(dir);
 		}
@@ -236,7 +280,16 @@ public class FeatureExtractor {
 		oos.close();
 	}
 
-	public void debugClassification(String centroid) {
+	public void classifyAll() throws IOException {
+		for (String className : centroids.keySet()) {
+			String centroid = centroids.get(className);
+
+			classify(className, centroid);
+		}
+	}
+
+	protected void classify(String className, String centroid)
+			throws IOException {
 		if (!vectors.containsKey(centroid)) {
 			throw new IllegalArgumentException(
 					"Centroid is invalid (no such a target: " + centroid + ")");
@@ -249,18 +302,28 @@ public class FeatureExtractor {
 				.natural().reverse(), Ordering.natural());
 		for (String t : vectors.keySet()) {
 			FeatureVector otherVector = vectors.get(t);
-			double sim = 1 - metric.distance(targetVector, otherVector);
-			if (!t.isEmpty() && sim != Double.NaN) {
+			Double sim = 1 - metric.distance(targetVector, otherVector);
+			if (!t.isEmpty() && !sim.isNaN()) {
 				sortedBySim.put(sim, t);
 			}
 		}
 
 		// 출력
-		for (Double t : sortedBySim.keySet()) {
-			if (t >= 0.05) {
-				System.out.printf("%s: %s\n", t, sortedBySim.get(t));
+		Path dir = Paths.get(outputDirPath).resolve("hierarchy");
+		if (!Files.exists(dir)) {
+			Files.createDirectories(dir);
+		}
+
+		Path outputFile = dir.resolve(className + ".txt");
+		try (BufferedWriter writer = Files.newBufferedWriter(outputFile,
+				StandardCharsets.UTF_8, StandardOpenOption.WRITE,
+				StandardOpenOption.CREATE)) {
+			for (Double t : sortedBySim.keySet()) {
+				String line = String.format("%s: %s\n", t, sortedBySim.get(t));
+				writer.write(line);
 			}
 		}
+
 	}
 
 	public void debug() {
@@ -269,7 +332,7 @@ public class FeatureExtractor {
 		System.out.println(vectors);
 	}
 
-	public String sanitize(String token) {
+	protected String sanitize(String token) {
 		String sanitizedToken = token;
 
 		if (token.contains(" ") || token.contains("\t")) { // 두 단어 이상으로 이루어진 구일
@@ -300,8 +363,8 @@ public class FeatureExtractor {
 	}
 
 	public void extract() throws IOException {
-		Path dir = Paths.get(DATA_DIR);
-		Path dataFile = dir.resolve(DATA_POS);
+		Path dir = Paths.get(INPUT_DIR_PATH);
+		Path dataFile = dir.resolve(POS_FILE);
 		try (BufferedReader reader = Files.newBufferedReader(dataFile,
 				StandardCharsets.UTF_8)) {
 			String line = "";
