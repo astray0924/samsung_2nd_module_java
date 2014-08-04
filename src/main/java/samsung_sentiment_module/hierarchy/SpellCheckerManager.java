@@ -15,8 +15,7 @@ public class SpellCheckerManager {
 
 	static {
 		try {
-//			dictionary = new SpellDictionaryHashMap(new File(
-//					"dictionary/english.txt"));
+
 			dictionary = new SpellDictionaryHashMap(new File(
 					"resources/dictionary/english.0.txt"));
 

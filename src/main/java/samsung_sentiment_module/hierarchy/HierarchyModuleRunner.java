@@ -8,19 +8,18 @@ public class HierarchyModuleRunner implements SamsungModule {
 
 	@Override
 	public void run(String[] args) {
-		FeatureExtractor extractor = new FeatureExtractor();
+		FeatureExtractor extractor = null;
 		try {
+			extractor = new FeatureExtractor();
 			extractor.extract();
 			extractor.vectorize();
-			extractor.serializeOutputs();
-			extractor.deserializeOutputs();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
+			// extractor.serializeOutputs();
+			// extractor.deserializeOutputs();
+		} catch (IOException e1) {
+			e1.printStackTrace();
 		}
-		
-		extractor.debugClassification("restaurant");
+
+		extractor.debugClassification("staff");
 
 	}
 
