@@ -17,40 +17,17 @@ public class Sentiment {
 	public static void main(String[] args) {
 		ArgumentParser parser = ArgumentParsers.newArgumentParser("Sentiment");
 
-		parser.addArgument("-i", "--inputDirPath")
-				.metavar("<dir_path>").type(String.class).nargs("?")
-				.help("the input dir path");
-		
+		parser.addArgument("-i", "--inputDirPath").metavar("<dir_path>")
+				.type(String.class).nargs("?").help("the input dir path");
+
 		parser.addArgument("-o", "--outputDirPath").metavar("<dir_path>")
 				.type(String.class).nargs("?").help("the output dir path");
-		
-		parser.addArgument("-fine", "--fineGrained")
-				.metavar("<-option>").type(String.class).nargs("?")
-				.help("finedGrained option");
 
-		Namespace parsedArgs = null;
-		try {
-			parsedArgs = parser.parseArgs(args);
-			System.out.println(parsedArgs);
-		} catch (ArgumentParserException e) {
-			parser.handleError(e);
-		}
+		parser.addArgument("-fine", "--fineGrained").metavar("<-option>")
+				.type(String.class).nargs("?").help("finedGrained option");
 
-		// 만약 output 디렉토리가 존재하지 않으면 새로 생성
-		Path outputPath = null;
-		try {
-			outputPath = Paths.get(parsedArgs.getString("outputDirPath"));
-			if (!Files.exists(outputPath)) {
-				Files.createDirectories(outputPath);
-			}
-
-		} catch (NullPointerException e) {
-			// System.err.println();
-		} catch (InvalidPathException e) {
-
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		Namespace parsedArgs = ArgumentHandler.handleArgumentString(args,
+				parser);
 
 		// 실행
 		SentimentPipeline runner = new SentimentPipeline();
