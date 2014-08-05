@@ -41,8 +41,6 @@ public class ArgumentHelper {
 			}
 		}
 
-		System.out.println(properties);
-
 		return new Namespace(properties);
 	}
 
@@ -52,12 +50,15 @@ public class ArgumentHelper {
 
 		try {
 			parsedArgs = parser.parseArgs(args);
-			// System.out.println(parsedArgs);
+			String selectedModule = parsedArgs.getString("Module"); 
 
 			try {
 				String propPath = parsedArgs.getString("propertyFile");
 				if (propPath != null) {
 					parsedArgs = loadProperties(propPath);
+					
+					// 선택된 모듈이 무엇이었는지 다시 기억 
+					parsedArgs.getAttrs().put("Module", selectedModule);
 				}
 			} catch (IOException e) {
 				e.printStackTrace();

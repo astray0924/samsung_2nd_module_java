@@ -340,6 +340,8 @@ public class FeatureExtractor {
 			}
 
 			writer.write(json.toJSONString());
+			
+			System.out.println(outputFile.toString() + " is generated");
 		}
 
 	}

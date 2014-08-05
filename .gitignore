@@ -18,3 +18,5 @@ centroids.txt
 /data
 /temp
 /result
+/tagged.pos
+/args.properties

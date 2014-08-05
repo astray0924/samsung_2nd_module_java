@@ -15,12 +15,6 @@ public class Main {
 
 	public static void main(String[] args) {
 		ArgumentParser parser = ArgumentParsers.newArgumentParser("");
-		parser.addArgument("-p", "--propertyFile")
-				.metavar("<property_file>")
-				.type(String.class)
-				.nargs("?")
-				.help("the property file path\n(it overrides the command line arguments)");
-
 		Subparsers subparsers = parser.addSubparsers().help("module to run")
 				.dest("Module");
 
@@ -38,6 +32,12 @@ public class Main {
 		parserSentiment.addArgument("-fine", "--fineGrained")
 				.metavar("<-option>").type(String.class).nargs("?")
 				.help("finedGrained option");
+		parserSentiment
+				.addArgument("-p", "--propertyFile")
+				.metavar("<property_file>")
+				.type(String.class)
+				.nargs("?")
+				.help("the property file path\n(it overrides the command line arguments)");
 
 		// Target
 		Subparser parserTarget = subparsers.addParser("Target").help(
@@ -62,6 +62,12 @@ public class Main {
 
 		parserTarget.addArgument("-co", "--coThreshold").metavar("F")
 				.type(String.class).nargs("?").help("the co_occurrence score");
+		parserTarget
+				.addArgument("-p", "--propertyFile")
+				.metavar("<property_file>")
+				.type(String.class)
+				.nargs("?")
+				.help("the property file path\n(it overrides the command line arguments)");
 
 		// Hierarchy
 		Subparser parserHierarchy = subparsers.addParser("Hierarchy").help(
@@ -69,8 +75,11 @@ public class Main {
 		parserHierarchy.addArgument("-centroid", "--centroidFilePath")
 				.metavar("<file_path>").type(String.class).nargs("?")
 				.help("the centroid file path");
-		parserHierarchy.addArgument("-if", "--inputFilePath")
-				.metavar("<file_path>").type(String.class).nargs("?")
+		parserHierarchy
+				.addArgument("-if", "--inputFilePath")
+				.metavar("<file_path>")
+				.type(String.class)
+				.nargs("?")
 				.help("the POS tagged file's path (default: ./temp/tagged.pos)")
 				.setDefault("./temp/tagged.pos");
 		parserHierarchy.addArgument("-o", "--outputDirPath")
@@ -82,11 +91,19 @@ public class Main {
 				.type(String.class)
 				.nargs("?")
 				.help("the cache dir path (if generated in previous iteration)");
+		parserHierarchy
+				.addArgument("-p", "--propertyFile")
+				.metavar("<property_file>")
+				.type(String.class)
+				.nargs("?")
+				.help("the property file path\n(it overrides the command line arguments)");
 
 		Namespace parsedArgs = ArgumentHelper
 				.handleArgumentString(args, parser);
 
 		// 선택된 모듈 실행
+		System.out.println(parsedArgs);
+		
 		Module module = Module.valueOf(parsedArgs.getString("Module")
 				.toUpperCase());
 		ModuleRunner runner = null;
