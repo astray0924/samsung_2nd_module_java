@@ -786,12 +786,7 @@ public class SentimentPipeline implements ModuleRunner {
 
 		}
 
-<<<<<<< HEAD
 		BufferedWriter output = new BufferedWriter(new FileWriter(outputDirPath+"/targetlist"));
-=======
-		BufferedWriter output = new BufferedWriter(new FileWriter(outputDirPath
-				+ "/targetlist"));
->>>>>>> branch 'master' of ssh://git@github.com/astray0924/samsung_2nd_module_java.git
 
 		output.write(sb.toString());
 		output.close();
