@@ -1,5 +1,0 @@
-4
-camera
-mp3
-phone
-router

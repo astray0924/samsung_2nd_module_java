@@ -1,4 +1,4 @@
-package samsung_sentiment_module;
+package samsung_sentiment_module.util;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -14,7 +14,7 @@ import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
 import net.sourceforge.argparse4j.inf.Namespace;
 
-public class ArgumentHandler {
+public class ArgumentHelper {
 	private static Namespace loadProperties(String propPath) throws IOException {
 		Map<String, Object> properties = new HashMap<String, Object>();
 		Path propFile = Paths.get(propPath);
@@ -26,7 +26,7 @@ public class ArgumentHandler {
 				if (line.startsWith("#")) {
 					continue;
 				}
-				
+
 				try {
 					String[] pair = line.trim().split("=");
 					String key = pair[0].trim();
@@ -41,30 +41,24 @@ public class ArgumentHandler {
 			}
 		}
 
-		System.out.println(properties);
-
 		return new Namespace(properties);
 	}
 
 	public static Namespace handleArgumentString(String[] args,
 			ArgumentParser parser) {
-		// property 파일 처리를 위한 옵션
-		parser.addArgument("-p", "--propertyFile")
-				.metavar("<property_file>")
-				.type(String.class)
-				.nargs("?")
-				.help("the property file path\n(it overrides the command line arguments)");
-
 		Namespace parsedArgs = null;
 
 		try {
 			parsedArgs = parser.parseArgs(args);
-//			System.out.println(parsedArgs);
+			String selectedModule = parsedArgs.getString("Module"); 
 
 			try {
 				String propPath = parsedArgs.getString("propertyFile");
 				if (propPath != null) {
 					parsedArgs = loadProperties(propPath);
+					
+					// 선택된 모듈이 무엇이었는지 다시 기억 
+					parsedArgs.getAttrs().put("Module", selectedModule);
 				}
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -73,14 +67,20 @@ public class ArgumentHandler {
 
 		} catch (ArgumentParserException e) {
 			parser.handleError(e);
+			System.exit(1);
 		}
 
 		// 만약 output 디렉토리가 존재하지 않으면 새로 생성
 		Path outputPath = null;
 		try {
-			outputPath = Paths.get(parsedArgs.getString("outputDirPath"));
-			if (!Files.exists(outputPath)) {
-				Files.createDirectories(outputPath);
+			String outputPathString = parsedArgs.getString("outputDirPath");
+
+			if (outputPathString != null) {
+				outputPath = Paths.get(outputPathString);
+				if (!Files.exists(outputPath)) {
+					Files.createDirectories(outputPath);
+				}
+
 			}
 
 		} catch (NullPointerException e) {

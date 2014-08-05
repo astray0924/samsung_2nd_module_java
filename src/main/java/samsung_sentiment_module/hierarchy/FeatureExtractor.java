@@ -5,10 +5,10 @@ import java.io.BufferedWriter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -25,6 +25,7 @@ import java.util.regex.Pattern;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
+import samsung_sentiment_module.util.SpellCheckerManager;
 import cc.mallet.types.Alphabet;
 import cc.mallet.types.FeatureVector;
 import cc.mallet.types.NormalizedDotProductMetric;
@@ -39,7 +40,7 @@ import com.google.common.collect.Ordering;
 import com.google.common.collect.TreeMultimap;
 
 public class FeatureExtractor {
-	private static final String INPUT_FILE_PATH = "./temp/tagged.pos";
+	private String inputFilePath = null;
 	private String outputDirPath = null;
 	private String centroidFilePath = null;
 
@@ -75,9 +76,10 @@ public class FeatureExtractor {
 	// 분류를 위한 centroid
 	private Map<String, String> centroids = new HashMap<String, String>();
 
-	public FeatureExtractor(String outputDirPath, String centroidFilePath)
-			throws IOException {
+	public FeatureExtractor(String inputFilePath, String outputDirPath,
+			String centroidFilePath) throws IOException {
 		// output & centroid path
+		this.inputFilePath = inputFilePath;
 		this.outputDirPath = outputDirPath;
 		this.centroidFilePath = centroidFilePath;
 
@@ -89,16 +91,11 @@ public class FeatureExtractor {
 	}
 
 	protected void populateStopWords() throws IOException {
-		URL stopUrl = FeatureExtractor.class.getClassLoader().getResource(
-				"stopwords.txt");
-		Path stopFile = null;
-		try {
-			stopFile = Paths.get(stopUrl.toURI());
-		} catch (URISyntaxException e) {
-			e.printStackTrace();
-		}
-		try (BufferedReader reader = Files.newBufferedReader(stopFile,
-				StandardCharsets.UTF_8)) {
+		InputStream is = FeatureExtractor.class
+				.getResourceAsStream("/stopwords.txt");
+
+		try (BufferedReader reader = new BufferedReader(new InputStreamReader(
+				is, "UTF-8"))) {
 			String line = "";
 
 			while ((line = reader.readLine()) != null) {
@@ -289,6 +286,10 @@ public class FeatureExtractor {
 
 		// close the stream
 		oos.close();
+
+		System.out.println("Processed vectors are cached at: "
+				+ dir.toAbsolutePath());
+		System.out.println("");
 	}
 
 	public void classifyAll() throws IOException {
@@ -339,6 +340,8 @@ public class FeatureExtractor {
 			}
 
 			writer.write(json.toJSONString());
+
+			System.out.println(outputFile.toString() + " is generated as output");
 		}
 
 	}
@@ -370,7 +373,7 @@ public class FeatureExtractor {
 			try {
 				sanitizedToken = SpellCheckerManager.getSuggestion(token);
 			} catch (NegativeArraySizeException e) {
-				e.printStackTrace();
+				// e.printStackTrace();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -380,7 +383,7 @@ public class FeatureExtractor {
 	}
 
 	public void extract() throws IOException {
-		Path dataFile = Paths.get(INPUT_FILE_PATH);
+		Path dataFile = Paths.get(inputFilePath);
 
 		try (BufferedReader reader = Files.newBufferedReader(dataFile,
 				StandardCharsets.UTF_8)) {

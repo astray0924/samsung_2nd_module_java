@@ -10,12 +10,14 @@ public class HierarchyModuleRunner implements ModuleRunner {
 	@Override
 	public void run(String[] args, Namespace parsedArgs) {
 		FeatureExtractor extractor = null;
+		String inputFilePath = parsedArgs.getString("inputFilePath");
 		String outputDirPath = parsedArgs.getString("outputDirPath");
 		String centroidFilePath = parsedArgs.getString("centroidFilePath");
 		String cacheDirPath = parsedArgs.getString("cacheDirPath");
 
 		try {
-			extractor = new FeatureExtractor(outputDirPath, centroidFilePath);
+			extractor = new FeatureExtractor(inputFilePath, outputDirPath,
+					centroidFilePath);
 
 			if (cacheDirPath != null) {
 

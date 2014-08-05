@@ -1,2 +1,7 @@
 eclipse.preferences.version=1
+<<<<<<< HEAD
+=======
+encoding//src/main/java=UTF-8
+encoding//src/main/resources=UTF-8
+>>>>>>> branch 'master' of ssh://git@github.com/astray0924/samsung_2nd_module_java.git
 encoding/<project>=UTF-8

@@ -10,7 +10,7 @@ public class FeatureExtractorTest {
 
 	@Before
 	public void init() throws IOException {
-		extractor = new FeatureExtractor("./output", "./centroids.txt");
+		extractor = new FeatureExtractor("./temp/tagged.pos", "./output", "./centroids.txt");
 	}
 
 	@Test
