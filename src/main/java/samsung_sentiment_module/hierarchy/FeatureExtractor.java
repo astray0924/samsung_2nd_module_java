@@ -9,7 +9,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -290,6 +289,7 @@ public class FeatureExtractor {
 
 		System.out.println("Processed vectors are cached at: "
 				+ dir.toAbsolutePath());
+		System.out.println("");
 	}
 
 	public void classifyAll() throws IOException {
@@ -341,7 +341,7 @@ public class FeatureExtractor {
 
 			writer.write(json.toJSONString());
 
-			System.out.println(outputFile.toString() + " is generated");
+			System.out.println(outputFile.toString() + " is generated as output");
 		}
 
 	}
