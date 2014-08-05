@@ -373,7 +373,7 @@ public class FeatureExtractor {
 			try {
 				sanitizedToken = SpellCheckerManager.getSuggestion(token);
 			} catch (NegativeArraySizeException e) {
-				e.printStackTrace();
+				// e.printStackTrace();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
