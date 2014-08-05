@@ -1,9 +1,10 @@
-package samsung_sentiment_module.hierarchy;
+package samsung_sentiment_module.util;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.URL;
+import java.io.InputStreamReader;
 import java.util.List;
+
+import samsung_sentiment_module.hierarchy.FeatureExtractor;
 
 import com.swabunga.spell.engine.SpellDictionaryHashMap;
 import com.swabunga.spell.engine.Word;
@@ -16,11 +17,10 @@ public class SpellCheckerManager {
 
 	static {
 		try {
-
-			URL url = FeatureExtractor.class.getClassLoader().getResource(
-					"english.0.txt");
-
-			dictionary = new SpellDictionaryHashMap(new File(url.getPath()));
+			InputStreamReader reader = new InputStreamReader(
+					FeatureExtractor.class
+							.getResourceAsStream("/english.0.txt"));
+			dictionary = new SpellDictionaryHashMap(reader);
 
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -41,8 +41,4 @@ public class SpellCheckerManager {
 			return word;
 		}
 	}
-
-	// public static void main(String[] args) {
-	// System.out.println(SpellCheckerManager.getAllSuggestion("verr"));
-	// }
 }

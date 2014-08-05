@@ -102,8 +102,6 @@ public class Main {
 				.handleArgumentString(args, parser);
 
 		// 선택된 모듈 실행
-		System.out.println(parsedArgs);
-		
 		Module module = Module.valueOf(parsedArgs.getString("Module")
 				.toUpperCase());
 		ModuleRunner runner = null;
