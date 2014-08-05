@@ -39,7 +39,7 @@ import com.google.common.collect.Ordering;
 import com.google.common.collect.TreeMultimap;
 
 public class FeatureExtractor {
-	private static final String INPUT_FILE_PATH = "./temp/tagged_big.pos";
+	private String inputFilePath = null;
 	private String outputDirPath = null;
 	private String centroidFilePath = null;
 
@@ -75,9 +75,10 @@ public class FeatureExtractor {
 	// 분류를 위한 centroid
 	private Map<String, String> centroids = new HashMap<String, String>();
 
-	public FeatureExtractor(String outputDirPath, String centroidFilePath)
+	public FeatureExtractor(String inputFilePath, String outputDirPath, String centroidFilePath)
 			throws IOException {
 		// output & centroid path
+		this.inputFilePath = inputFilePath;
 		this.outputDirPath = outputDirPath;
 		this.centroidFilePath = centroidFilePath;
 
@@ -380,7 +381,7 @@ public class FeatureExtractor {
 	}
 
 	public void extract() throws IOException {
-		Path dataFile = Paths.get(INPUT_FILE_PATH);
+		Path dataFile = Paths.get(inputFilePath);
 
 		try (BufferedReader reader = Files.newBufferedReader(dataFile,
 				StandardCharsets.UTF_8)) {

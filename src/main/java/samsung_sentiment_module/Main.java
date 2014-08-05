@@ -50,18 +50,17 @@ public class Main {
 				.type(String.class).nargs("?").help("the output dir path");
 
 		parserTarget.addArgument("-if", "--inputFilePath")
-				.metavar("<cache_dir>").type(String.class).nargs("?")
+				.metavar("<file_path>").type(String.class).nargs("?")
 				.help("the input File path");
 
 		parserTarget.addArgument("-df", "--domainFilePath")
-				.metavar("<cache_dir>").type(String.class).nargs("?")
+				.metavar("<file_path>").type(String.class).nargs("?")
 				.help("the domain File path");
 
-		parserTarget.addArgument("-pmi", "--pmiThreshold")
-				.metavar("<cache_dir>").type(String.class).nargs("?")
-				.help("the pmi score");
+		parserTarget.addArgument("-pmi", "--pmiThreshold").metavar("F")
+				.type(String.class).nargs("?").help("the pmi score");
 
-		parserTarget.addArgument("-co", "--coThreshold").metavar("<cache_dir>")
+		parserTarget.addArgument("-co", "--coThreshold").metavar("F")
 				.type(String.class).nargs("?").help("the co_occurrence score");
 
 		// Hierarchy
@@ -70,12 +69,16 @@ public class Main {
 		parserHierarchy.addArgument("-centroid", "--centroidFilePath")
 				.metavar("<file_path>").type(String.class).nargs("?")
 				.help("the centroid file path");
+		parserHierarchy.addArgument("-if", "--inputFilePath")
+				.metavar("<file_path>").type(String.class).nargs("?")
+				.help("the POS tagged file's path (default: ./temp/tagged.pos)")
+				.setDefault("./temp/tagged.pos");
 		parserHierarchy.addArgument("-o", "--outputDirPath")
 				.metavar("<dir_path>").type(String.class).nargs("?")
 				.help("the output dir path");
 		parserHierarchy
 				.addArgument("-cache", "--cacheDirPath")
-				.metavar("<cache_dir>")
+				.metavar("<dir_path>")
 				.type(String.class)
 				.nargs("?")
 				.help("the cache dir path (if generated in previous iteration)");
