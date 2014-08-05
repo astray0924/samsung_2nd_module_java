@@ -6,13 +6,13 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.StringTokenizer;
 
-
 import edu.stanford.nlp.tagger.maxent.MaxentTagger;
 import edu.stanford.nlp.tagger.maxent.TaggerConfig;
 
 public class Tagger_IRNLP {
 	
 	static MaxentTagger tagger;
+	
 	
 	public Tagger_IRNLP(){
 		String model = "taggers/english-left3words-distsim.tagger";
