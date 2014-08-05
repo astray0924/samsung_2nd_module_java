@@ -787,14 +787,12 @@ public class SentimentPipeline implements ModuleRunner {
 			doc += TxtReader.readFile(f.getCanonicalPath());
 		}
 
-
 		for (int i = 0; i < targetList.size(); i++) {
 			int freq = doc.split(targetList.get(i)).length - 1;
 			sb.append(targetList.get(i) + "\t" + freq + "\n");
 
 		}
 
-		
 		BufferedWriter output = new BufferedWriter(new FileWriter(outputDirPath+"/targetlist"));
 
 		output.write(sb.toString());
@@ -946,7 +944,7 @@ public class SentimentPipeline implements ModuleRunner {
 
 		try {
 			senti(inputDirPath, outputDirPath, threeClass);
-			targetListWrite("temp");
+			//targetListWrite("temp");
 		} catch (ClassNotFoundException | IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
