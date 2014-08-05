@@ -34,8 +34,8 @@ public class StopWordFilter {
 	
 	public static void readFile(String inputFileName){
 		
-		InputStream is = FeatureExtractor.class
-				.getResourceAsStream("stopwordlist");
+		InputStream is = StopWordFilter.class
+				.getResourceAsStream("/stopwordlist");
 		
 	    try(BufferedReader in = new BufferedReader(new InputStreamReader(
 				is, "UTF-8")) ) {

@@ -29,7 +29,7 @@ public class Tagger_IRNLP {
 	static MaxentTagger tagger;
 	
 	public Tagger_IRNLP(){
-		String model = "taggers/english-left3words-distsim.tagger";
+		String model = "english-left3words-distsim.tagger";
 		TaggerConfig config = new TaggerConfig("-outputFormat","xml",
 				"-model", model);
 
