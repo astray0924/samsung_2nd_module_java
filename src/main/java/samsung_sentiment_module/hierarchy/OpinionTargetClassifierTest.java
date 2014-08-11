@@ -5,18 +5,18 @@ import java.io.IOException;
 import org.junit.Before;
 import org.junit.Test;
 
-public class FeatureExtractorTest {
-	FeatureExtractor extractor;
+public class OpinionTargetClassifierTest {
+	OpinionTargetClassifier extractor;
 
 	@Before
 	public void init() throws IOException {
-		extractor = new FeatureExtractor("./temp/tagged.pos", "./output", "./centroids.txt");
+		extractor = new OpinionTargetClassifier("./temp/tagged.pos", "./output", "./centroids.txt");
 	}
 
 	@Test
 	public void testExtract() {
 		try {
-			extractor.extract();
+			extractor.extractContexts();
 		} catch (IOException e) {
 
 			e.printStackTrace();
@@ -29,7 +29,7 @@ public class FeatureExtractorTest {
 				"nice\tresturant", "Chinese restaurant" };
 
 		for (String token : testTokens) {
-			String newToken = extractor.sanitize(token);
+			String newToken = extractor.sanitizeToken(token);
 
 			System.out.println(newToken);
 		}
@@ -38,7 +38,7 @@ public class FeatureExtractorTest {
 	@Test
 	public void testPopulateCentroids() throws IOException {
 		extractor.populateCentroids();
-		extractor.debugCentroids();
+		extractor.getCentroids();
 	}
 
 }

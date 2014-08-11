@@ -33,7 +33,7 @@ import net.sourceforge.argparse4j.inf.Namespace;
 import org.ejml.simple.SimpleMatrix;
 
 import samsung_sentiment_module.abs.ModuleRunner;
-import samsung_sentiment_module.hierarchy.FeatureExtractor;
+import samsung_sentiment_module.hierarchy.OpinionTargetClassifier;
 import edu.stanford.nlp.io.IOUtils;
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreAnnotations.PartOfSpeechAnnotation;

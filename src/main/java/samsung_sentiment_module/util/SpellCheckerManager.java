@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.List;
 
-import samsung_sentiment_module.hierarchy.FeatureExtractor;
+import samsung_sentiment_module.hierarchy.OpinionTargetClassifier;
 
 import com.swabunga.spell.engine.SpellDictionaryHashMap;
 import com.swabunga.spell.engine.Word;
@@ -18,7 +18,7 @@ public class SpellCheckerManager {
 	static {
 		try {
 			InputStreamReader reader = new InputStreamReader(
-					FeatureExtractor.class
+					OpinionTargetClassifier.class
 							.getResourceAsStream("/english.0.txt"));
 			dictionary = new SpellDictionaryHashMap(reader);
 

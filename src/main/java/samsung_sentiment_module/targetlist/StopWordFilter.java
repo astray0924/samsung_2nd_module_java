@@ -13,7 +13,7 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
-import samsung_sentiment_module.hierarchy.FeatureExtractor;
+import samsung_sentiment_module.hierarchy.OpinionTargetClassifier;
 
 class StopWordFilter {
 	
