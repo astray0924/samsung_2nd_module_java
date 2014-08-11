@@ -1,3 +1,9 @@
+/**
+ * 의견 대상 분류기
+ * @version : 1.0
+ * @author  : Kyoungrok Jang (kyoungrok.jang@kaist.ac.kr)
+ */
+
 package samsung_sentiment_module.hierarchy;
 
 import java.io.BufferedReader;
@@ -39,6 +45,7 @@ import com.google.common.collect.Multisets;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.TreeMultimap;
 
+
 public class OpinionTargetClassifier {
 	private String inputFilePath = null;
 	private String outputDirPath = null;
@@ -76,6 +83,24 @@ public class OpinionTargetClassifier {
 	// 분류를 위한 centroid
 	private Map<String, String> centroids = new HashMap<String, String>();
 
+	/**
+	 * 생성자
+	 * @param inputFilePath POS 태깅된 문장들이 줄(line) 별로 나뉘어져 있는 데이터 파일의 경로 
+	 * <br />(반드시 한 줄당 한 문장이 나와야 합니다)
+	 * @param outputDirPath 분류 결과를 출력할 디렉토리의 경로
+	 * @param centroidFilePath 상위 의견 대상(클래스)과 각각의 상위 의견 대상을 나타내는 centroid가 될 의견 대상의 이름을 포함하는 파일의 경로
+	 * <p>
+	 * 대상 centroid 파일은 <code><b>"상위 의견 대상(클래스)"="centroid 의견 대상"</b></code> 형태로 기재되어 있어야 함. 여러 줄에 걸쳐 기재 가능함.
+	 * </p>
+	 * <p>
+	 * 예시: <code>Food=restaurant</code>
+	 * </p>
+	 * <p>
+	 * centroid로 사용하고자 한 의견 대상이 말뭉치에서 추출되지 않았을 경우, 에러를 출력함
+	 * 말뭉치에서 어떤 의견 대상들이 추출되었는지는 {@link #getAllNPs()}를 사용하여 확인 가능  
+	 * </p>
+	 * @throws IOException
+	 */
 	public OpinionTargetClassifier(String inputFilePath, String outputDirPath,
 			String centroidFilePath) throws IOException {
 		// output & centroid path
@@ -90,6 +115,13 @@ public class OpinionTargetClassifier {
 		populateCentroids();
 	}
 
+	/**
+	 * 말뭉치에서 등장하는 의견 대상들을 그것들을 수식하는 형용사들로 구성된 context로 추출
+	 * <p>
+	 * 추출된 의견 대상들의 context는 {@link #getCountContexts()}를 이용해서 가져올 수 있음
+	 * </p>
+	 * @throws IOException
+	 */
 	public void extractContexts() throws IOException {
 		Path dataFile = Paths.get(inputFilePath);
 
@@ -171,6 +203,16 @@ public class OpinionTargetClassifier {
 		}
 	}
 
+	/**
+	 * {@link #extractContexts()}를 이용해서 추출한 의견 대상의 context들을 빠른 벡터 연산을 위해 벡터로 변환함
+	 * Mallet의 {@link cc.mallet.types.FeatureVector} 클래스를 활용
+	 * <p>
+	 * 생성된 벡터는 {@link #getVectors()}를 이용해서 가져올 수 있음
+	 * </p>
+	 * 
+	 * @see #getVectors()
+	 * @see cc.mallet.types.FeatureVector
+	 */
 	public void vectorizeContexts() {
 		// 형용사(context) vocabulary 생성
 		adjVocabulary = new Alphabet();
@@ -241,6 +283,10 @@ public class OpinionTargetClassifier {
 
 	}
 
+	/**
+	 * 말뭉치에서 등장하는 의견 대상들을 사용자가 제공한 각각의 상위 의견 대상들과 유사한 순으로 정렬하여 출력
+	 * @throws IOException
+	 */
 	public void classifyAll() throws IOException {
 		for (String className : centroids.keySet()) {
 			String centroid = centroids.get(className);
@@ -249,30 +295,48 @@ public class OpinionTargetClassifier {
 		}
 	}
 
+	/**
+	 * 형용사로 구성된 의견 대상 벡터를 반환. 벡터의 component는 형용사이고, 값은 형용사가 의견 대상을 수식한 횟수
+	 * 
+	 * @return 형용사로 구성된 의견 대상 벡터(count)
+	 */
 	public Map<String, Multiset<String>> getCountContexts() {
 		return countContexts;
 	}
 
+	/**
+	 * 형용사로 구성된 의견 대상 벡터를 반환. 벡터의 component는 형용사이고, 값은 형용사와 의견 대상 간의 Positive PMI(PPMI) 값. 
+	 * PPMI는 원본 PMI값이 음수일 때에는 0의 값을 갖고, 0보다 크거나 같을 경우 원본 PMI와 동일한 값을 갖는다
+	 * 
+	 * @return 형용사로 구성된 의견 대상 벡터(PPMI)
+	 */
 	public Map<String, HashMap<String, Double>> getNormalizedContexts() {
 		return ppmiContexts;
 	}
 
+	/**
+	 * 빠른 벡터 연산을 위해 변환된 의견 대상 벡터들을 반환 
+	 * 
+	 * @return 의견 대상들의 벡터
+	 * @see cc.mallet.types.FeatureVector
+	 */
 	public Map<String, FeatureVector> getVectors() {
 		return contextVectors;
 	}
 
-	public ImmutableSet<Entry<String>> getAllTokens() {
-		return Multisets.copyHighestCountFirst(tokenSet).entrySet();
-	}
-
+	/**
+	 * 말뭉치에서 등장한 명사구(NP) - 의견 대상 후보 - 들을 출현 빈도 순으로 정렬하여 반환
+	 * @return 말뭉치에서 등장한 명사구(NP)들을 출현 빈도 순으로 정렬한 목록
+	 */
 	public ImmutableSet<Entry<String>> getAllNPs() {
 		return Multisets.copyHighestCountFirst(npSet).entrySet();
 	}
 
-	public Map<String, String> getCentroids() {
-		return centroids;
-	}
-
+	/**
+	 * 분류를 위해 생성된 의견 대상 벡터 등의 중간 결과물들을 cache 디렉토리에 저장
+	 * 
+	 * @throws IOException
+	 */
 	public void storeVectorsAsCache() throws IOException {
 		FileOutputStream fos = null;
 		ObjectOutputStream oos = null;
@@ -280,39 +344,45 @@ public class OpinionTargetClassifier {
 		if (!Files.isDirectory(dir)) {
 			Files.createDirectories(dir);
 		}
-	
+
 		// vocabulary 저장
 		fos = new FileOutputStream(dir.resolve("vocabulary.dat").toFile());
 		oos = new ObjectOutputStream(fos);
 		oos.writeObject(adjVocabulary);
 		fos.close();
-	
+
 		// countContexts 저장
 		fos = new FileOutputStream(dir.resolve("countContexts.dat").toFile());
 		oos = new ObjectOutputStream(fos);
 		oos.writeObject(countContexts);
 		fos.close();
-	
+
 		// ppmiContexts 저장
 		fos = new FileOutputStream(dir.resolve("ppmiContexts.dat").toFile());
 		oos = new ObjectOutputStream(fos);
 		oos.writeObject(ppmiContexts);
 		fos.close();
-	
+
 		// vectors 저장
 		fos = new FileOutputStream(dir.resolve("vectors.dat").toFile());
 		oos = new ObjectOutputStream(fos);
 		oos.writeObject(contextVectors);
 		fos.close();
-	
+
 		// close the stream
 		oos.close();
-	
+
 		System.out.println("Processed vectors are cached at: "
 				+ dir.toAbsolutePath());
 		System.out.println("");
 	}
 
+	/**
+	 * 분류를 위해 생성된 의견 대상 벡터 등의 중간 결과물들을 cache 디렉토리에서 로드
+	 * @param cacheDir 중간 결과물들이 저장되어 있는 cache 디렉토리
+	 * @throws ClassNotFoundException
+	 * @throws IOException
+	 */
 	@SuppressWarnings("unchecked")
 	public void loadVectorsFromCache(String cacheDir)
 			throws ClassNotFoundException, IOException {
@@ -351,13 +421,21 @@ public class OpinionTargetClassifier {
 		fis.close();
 	}
 
+	protected ImmutableSet<Entry<String>> getAllTokens() {
+		return Multisets.copyHighestCountFirst(tokenSet).entrySet();
+	}
+
+	protected Map<String, String> getCentroids() {
+		return centroids;
+	}
+
 	protected void classifySingle(String className, String centroid)
 			throws IOException {
 		if (!contextVectors.containsKey(centroid)) {
 			throw new IllegalArgumentException(
 					"Centroid is invalid (no such a target: " + centroid + ")");
 		}
-	
+
 		// 유사도 계산
 		NormalizedDotProductMetric metric = new NormalizedDotProductMetric();
 		FeatureVector targetVector = contextVectors.get(centroid);
@@ -370,32 +448,32 @@ public class OpinionTargetClassifier {
 				sortedBySim.put(sim, t);
 			}
 		}
-	
+
 		// 출력
 		Path dir = Paths.get(outputDirPath).resolve("hierarchy");
 		if (!Files.exists(dir)) {
 			Files.createDirectories(dir);
 		}
-	
+
 		Path outputFile = dir.resolve(className + ".txt");
 		JSONObject json = new JSONObject();
-	
+
 		try (BufferedWriter writer = Files.newBufferedWriter(outputFile,
 				StandardCharsets.UTF_8, StandardOpenOption.WRITE,
 				StandardOpenOption.CREATE)) {
 			for (Double t : sortedBySim.keySet()) {
 				JSONArray array = new JSONArray();
 				array.addAll(sortedBySim.get(t));
-	
+
 				json.put(t, array);
 			}
-	
+
 			writer.write(json.toJSONString());
-	
+
 			System.out.println(outputFile.toString()
 					+ " is generated as output");
 		}
-	
+
 	}
 
 	protected String sanitizeToken(String token) {
