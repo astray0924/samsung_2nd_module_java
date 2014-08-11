@@ -9,24 +9,24 @@ public class Main implements ModuleRunner {
 
 	@Override
 	public void run(String[] args, Namespace parsedArgs) {
-		OpinionTargetClassifier vectorizer = null;
+		OpinionTargetClassifier classifier = null;
 		String inputFilePath = parsedArgs.getString("inputFilePath");
 		String outputDirPath = parsedArgs.getString("outputDirPath");
 		String centroidFilePath = parsedArgs.getString("centroidFilePath");
 		String cacheDirPath = parsedArgs.getString("cacheDirPath");
 
 		try {
-			vectorizer = new OpinionTargetClassifier(inputFilePath, outputDirPath,
+			classifier = new OpinionTargetClassifier(inputFilePath, outputDirPath,
 					centroidFilePath);
 			if (cacheDirPath != null) {
-				vectorizer.loadVectorsFromCache(cacheDirPath);
+				classifier.loadVectorsFromCache(cacheDirPath);
 			} else {
-				vectorizer.extractContexts();
-				vectorizer.vectorizeContexts();
-				vectorizer.storeVectorsAsCache();
+				classifier.extractContexts();
+				classifier.vectorizeContexts();
+				classifier.storeVectorsAsCache();
 			}
 
-			vectorizer.classifyAll();
+			classifier.classifyAll();
 
 		} catch (IOException e1) {
 			e1.printStackTrace();
