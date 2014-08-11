@@ -431,7 +431,7 @@ public class SentimentPipeline implements ModuleRunner {
 			g = g.replaceAll("   ", " ");
 			g = g.trim();
 
-			System.out.println(g);
+		
 			int non = 0;
 			non = treeBank(g, adj_list,  nnMap, outputFileName, sb,
 					threeClass, sentList);
@@ -624,7 +624,7 @@ public class SentimentPipeline implements ModuleRunner {
 							sb.append(out);
 							
 							wordList.add(new WordObject(adj,noun,pol));
-							System.out.println("("+noun+","+adj+","+senti +")" );
+							
 
 						}
 	
