@@ -6,17 +6,17 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class FeatureExtractorTest {
-	FeatureExtractor extractor;
+	FeatureVectorizer extractor;
 
 	@Before
 	public void init() throws IOException {
-		extractor = new FeatureExtractor("./temp/tagged.pos", "./output", "./centroids.txt");
+		extractor = new FeatureVectorizer("./temp/tagged.pos", "./output", "./centroids.txt");
 	}
 
 	@Test
 	public void testExtract() {
 		try {
-			extractor.extractCountContexts();
+			extractor.extractContexts();
 		} catch (IOException e) {
 
 			e.printStackTrace();

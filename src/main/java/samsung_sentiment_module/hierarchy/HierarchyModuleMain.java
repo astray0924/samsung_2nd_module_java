@@ -5,31 +5,28 @@ import java.io.IOException;
 import net.sourceforge.argparse4j.inf.Namespace;
 import samsung_sentiment_module.abs.ModuleRunner;
 
-public class HierarchyModuleRunner implements ModuleRunner {
+public class HierarchyModuleMain implements ModuleRunner {
 
 	@Override
 	public void run(String[] args, Namespace parsedArgs) {
-		FeatureExtractor extractor = null;
+		FeatureVectorizer vectorizer = null;
 		String inputFilePath = parsedArgs.getString("inputFilePath");
 		String outputDirPath = parsedArgs.getString("outputDirPath");
 		String centroidFilePath = parsedArgs.getString("centroidFilePath");
 		String cacheDirPath = parsedArgs.getString("cacheDirPath");
 
 		try {
-			extractor = new FeatureExtractor(inputFilePath, outputDirPath,
+			vectorizer = new FeatureVectorizer(inputFilePath, outputDirPath,
 					centroidFilePath);
-
 			if (cacheDirPath != null) {
-
-				extractor.loadVectorCache(cacheDirPath);
+				vectorizer.loadVectorsFromCache(cacheDirPath);
 			} else {
-
-				extractor.extractCountContexts();
-				extractor.vectorize();
-				extractor.storeVectorCache();
+				vectorizer.extractContexts();
+				vectorizer.vectorizeContexts();
+				vectorizer.storeVectorsAsCache();
 			}
 
-			extractor.classifyAll();
+			vectorizer.classifyAll();
 
 		} catch (IOException e1) {
 			e1.printStackTrace();

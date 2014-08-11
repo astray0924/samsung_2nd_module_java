@@ -39,7 +39,7 @@ import com.google.common.collect.Multisets;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.TreeMultimap;
 
-public class FeatureExtractor {
+public class FeatureVectorizer {
 	private String inputFilePath = null;
 	private String outputDirPath = null;
 	private String centroidFilePath = null;
@@ -76,7 +76,7 @@ public class FeatureExtractor {
 	// 분류를 위한 centroid
 	private Map<String, String> centroids = new HashMap<String, String>();
 
-	public FeatureExtractor(String inputFilePath, String outputDirPath,
+	public FeatureVectorizer(String inputFilePath, String outputDirPath,
 			String centroidFilePath) throws IOException {
 		// output & centroid path
 		this.inputFilePath = inputFilePath;
@@ -90,7 +90,7 @@ public class FeatureExtractor {
 		populateCentroids();
 	}
 
-	public void extractCountContexts() throws IOException {
+	public void extractContexts() throws IOException {
 		Path dataFile = Paths.get(inputFilePath);
 
 		try (BufferedReader reader = Files.newBufferedReader(dataFile,
@@ -175,7 +175,7 @@ public class FeatureExtractor {
 		return countContexts;
 	}
 
-	public void vectorize() {
+	public void vectorizeContexts() {
 		// 형용사(context) vocabulary 생성
 		adjVocabulary = new Alphabet();
 		for (java.util.Map.Entry<String, Multiset<String>> entry : countContexts
@@ -273,7 +273,7 @@ public class FeatureExtractor {
 	}
 
 	@SuppressWarnings("unchecked")
-	public void loadVectorCache(String cacheDir) throws ClassNotFoundException,
+	public void loadVectorsFromCache(String cacheDir) throws ClassNotFoundException,
 			IOException {
 		FileInputStream fis = null;
 		ObjectInputStream ois = null;
@@ -310,7 +310,7 @@ public class FeatureExtractor {
 		fis.close();
 	}
 
-	public void storeVectorCache() throws IOException {
+	public void storeVectorsAsCache() throws IOException {
 		FileOutputStream fos = null;
 		ObjectOutputStream oos = null;
 		Path dir = Paths.get("output/hierarchy_cache");
@@ -427,8 +427,8 @@ public class FeatureExtractor {
 		return sanitizedToken.trim().toLowerCase();
 	}
 
-	private void populateStopWords() throws IOException {
-		InputStream is = FeatureExtractor.class
+	protected void populateStopWords() throws IOException {
+		InputStream is = FeatureVectorizer.class
 				.getResourceAsStream("/stopwords.txt");
 
 		try (BufferedReader reader = new BufferedReader(new InputStreamReader(
