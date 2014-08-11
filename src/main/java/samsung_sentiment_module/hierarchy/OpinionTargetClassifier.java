@@ -171,14 +171,6 @@ public class OpinionTargetClassifier {
 		}
 	}
 
-	public Map<String, Multiset<String>> getCountContexts() {
-		return countContexts;
-	}
-
-	public Map<String, HashMap<String, Double>> getNormalizedContexts() {
-		return ppmiContexts;
-	}
-
 	public void vectorizeContexts() {
 		// 형용사(context) vocabulary 생성
 		adjVocabulary = new Alphabet();
@@ -249,10 +241,6 @@ public class OpinionTargetClassifier {
 
 	}
 
-	public Map<String, FeatureVector> getVectors() {
-		return contextVectors;
-	}
-
 	public void classifyAll() throws IOException {
 		for (String className : centroids.keySet()) {
 			String centroid = centroids.get(className);
@@ -261,51 +249,16 @@ public class OpinionTargetClassifier {
 		}
 	}
 
-	protected void classifySingle(String className, String centroid)
-			throws IOException {
-		if (!contextVectors.containsKey(centroid)) {
-			throw new IllegalArgumentException(
-					"Centroid is invalid (no such a target: " + centroid + ")");
-		}
-	
-		// 유사도 계산
-		NormalizedDotProductMetric metric = new NormalizedDotProductMetric();
-		FeatureVector targetVector = contextVectors.get(centroid);
-		Multimap<Double, String> sortedBySim = TreeMultimap.create(Ordering
-				.natural().reverse(), Ordering.natural());
-		for (String t : contextVectors.keySet()) {
-			FeatureVector otherVector = contextVectors.get(t);
-			Double sim = 1 - metric.distance(targetVector, otherVector);
-			if (!t.isEmpty() && !sim.isNaN()) {
-				sortedBySim.put(sim, t);
-			}
-		}
-	
-		// 출력
-		Path dir = Paths.get(outputDirPath).resolve("hierarchy");
-		if (!Files.exists(dir)) {
-			Files.createDirectories(dir);
-		}
-	
-		Path outputFile = dir.resolve(className + ".txt");
-		JSONObject json = new JSONObject();
-	
-		try (BufferedWriter writer = Files.newBufferedWriter(outputFile,
-				StandardCharsets.UTF_8, StandardOpenOption.WRITE,
-				StandardOpenOption.CREATE)) {
-			for (Double t : sortedBySim.keySet()) {
-				JSONArray array = new JSONArray();
-				array.addAll(sortedBySim.get(t));
-	
-				json.put(t, array);
-			}
-	
-			writer.write(json.toJSONString());
-	
-			System.out.println(outputFile.toString()
-					+ " is generated as output");
-		}
-	
+	public Map<String, Multiset<String>> getCountContexts() {
+		return countContexts;
+	}
+
+	public Map<String, HashMap<String, Double>> getNormalizedContexts() {
+		return ppmiContexts;
+	}
+
+	public Map<String, FeatureVector> getVectors() {
+		return contextVectors;
 	}
 
 	public ImmutableSet<Entry<String>> getAllTokens() {
@@ -396,6 +349,53 @@ public class OpinionTargetClassifier {
 		ois = new ObjectInputStream(fis);
 		contextVectors = (HashMap<String, FeatureVector>) ois.readObject();
 		fis.close();
+	}
+
+	protected void classifySingle(String className, String centroid)
+			throws IOException {
+		if (!contextVectors.containsKey(centroid)) {
+			throw new IllegalArgumentException(
+					"Centroid is invalid (no such a target: " + centroid + ")");
+		}
+	
+		// 유사도 계산
+		NormalizedDotProductMetric metric = new NormalizedDotProductMetric();
+		FeatureVector targetVector = contextVectors.get(centroid);
+		Multimap<Double, String> sortedBySim = TreeMultimap.create(Ordering
+				.natural().reverse(), Ordering.natural());
+		for (String t : contextVectors.keySet()) {
+			FeatureVector otherVector = contextVectors.get(t);
+			Double sim = 1 - metric.distance(targetVector, otherVector);
+			if (!t.isEmpty() && !sim.isNaN()) {
+				sortedBySim.put(sim, t);
+			}
+		}
+	
+		// 출력
+		Path dir = Paths.get(outputDirPath).resolve("hierarchy");
+		if (!Files.exists(dir)) {
+			Files.createDirectories(dir);
+		}
+	
+		Path outputFile = dir.resolve(className + ".txt");
+		JSONObject json = new JSONObject();
+	
+		try (BufferedWriter writer = Files.newBufferedWriter(outputFile,
+				StandardCharsets.UTF_8, StandardOpenOption.WRITE,
+				StandardOpenOption.CREATE)) {
+			for (Double t : sortedBySim.keySet()) {
+				JSONArray array = new JSONArray();
+				array.addAll(sortedBySim.get(t));
+	
+				json.put(t, array);
+			}
+	
+			writer.write(json.toJSONString());
+	
+			System.out.println(outputFile.toString()
+					+ " is generated as output");
+		}
+	
 	}
 
 	protected String sanitizeToken(String token) {
