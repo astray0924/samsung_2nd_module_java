@@ -70,7 +70,7 @@ public class targetModuleRunner implements ModuleRunner {
 		String allDoc = "";
 		
 	    String outputFileName = outputDirPath +"/"+ inputFilePath;
-		BufferedWriter output = new BufferedWriter(new FileWriter(outputFileName)); //output directory	
+		BufferedWriter output = new BufferedWriter(new FileWriter(outputFileName+".txt")); //output directory	
 
 		String domainEntity[] = new String[numOfProduct];
 		String domainList[]  = readDomainFile(domainFilePath);
@@ -122,7 +122,7 @@ public class targetModuleRunner implements ModuleRunner {
 					int targetN = -1;
 					if( productFileList.get(i).getName().contains(inputFilePath) ){ //domain i 만 성능펴가 하기 위함
 						Tagger_IRNLP irnlp = new Tagger_IRNLP();
-						irnlp.tagger(productFileList.get(i).getPath(), i, nounList, pipeline); 
+						Tagger_IRNLP.tagger(productFileList.get(i).getPath(), i, nounList, pipeline); 
 						targetN = i;			
 					}
 					
@@ -140,7 +140,6 @@ public class targetModuleRunner implements ModuleRunner {
 				
 				StringBuilder sb = new StringBuilder();
 				
-				//coOccurOpinion.co_occur();
 				
 				Map<String, String> map = new HashMap<String, String>();
 				 
@@ -161,12 +160,10 @@ public class targetModuleRunner implements ModuleRunner {
 							temp[j] = computePMI.pmiScore( text[j], a.word, domainEntity[j], Review);
 							
 						}
-						// 카메라 벡터와만 비교 (카메라 리뷰만 성능 평가 시)
 
 						a.setPmiScore(temp.clone());
 						a.setSimilairty(dv);
-						
-						// 1 평가시 도메인 단어 바꿔야됨
+										
 						if( a.pmiVectorSimilarity(dv[domainToNum.get(targetDomain)]) > pmiThreshold && coOccurOpinion.probOfSenti(a.word) > coThreshold ){  //phone -> target 파일의 도메인을 domain list 번호로 매치해서
 							
 							jsonResult.append("{\"opinion target\":\"" + a.word + "\"},");							
@@ -178,8 +175,13 @@ public class targetModuleRunner implements ModuleRunner {
 						}
 					}
 				}
+
+				jsonResult = jsonResult.deleteCharAt(jsonResult.length()-1);
+				jsonResult.append("]}}");
+				
 				System.out.println("The anlysis has been done.");
-				output.write(SentimentPipeline.jsonBeautifier(sb.toString()));
+				System.out.println(jsonResult.toString());
+				output.write(SentimentPipeline.jsonBeautifier(jsonResult.toString()));
 				
 			} catch (IOException e) {
 				// TODO Auto-generated catch block

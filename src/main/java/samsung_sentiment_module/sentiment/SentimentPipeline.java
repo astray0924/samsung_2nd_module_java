@@ -33,7 +33,12 @@ import net.sourceforge.argparse4j.inf.Namespace;
 import org.ejml.simple.SimpleMatrix;
 
 import samsung_sentiment_module.abs.ModuleRunner;
-import samsung_sentiment_module.hierarchy.OpinionTargetClassifier;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
+
 import edu.stanford.nlp.io.IOUtils;
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreAnnotations.PartOfSpeechAnnotation;
@@ -55,11 +60,6 @@ import edu.stanford.nlp.trees.TreeCoreAnnotations;
 import edu.stanford.nlp.trees.TreePrint;
 import edu.stanford.nlp.util.CoreMap;
 import edu.stanford.nlp.util.Generics;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
 
 
 /**
@@ -96,6 +96,8 @@ public class SentimentPipeline implements ModuleRunner {
 		try {
 			List<FileObject> t = senti(inputDirPath, outputDirPath, threeClass);
 			
+			
+			/* //결과 출력 예제
 			for(int i =0 ; i < t.size() ; i++){
 				List<SentObject> a =  t.get(i).getSentObject();
 				for(int j = 0 ; j < a.size() ; j++){
@@ -107,10 +109,11 @@ public class SentimentPipeline implements ModuleRunner {
 						System.out.println(w.get(k).opinionWord);
 						System.out.println(w.get(k).polarity);
 					}
-					System.out.println("--w--");
 				}
 				System.out.println("------");
 			}
+			*/
+			
 			// targetListWrite("temp");
 		} catch (ClassNotFoundException | IOException e) {
 			// TODO Auto-generated catch block
