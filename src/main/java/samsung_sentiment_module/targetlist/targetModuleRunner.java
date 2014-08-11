@@ -15,36 +15,53 @@ import java.util.Properties;
 
 import net.sourceforge.argparse4j.inf.Namespace;
 import samsung_sentiment_module.abs.ModuleRunner;
+import samsung_sentiment_module.sentiment.SentimentPipeline;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 
+/**
+ * 
+ * 의견 대상의 추출을 수행하는 클래스
+ * 
+ * @author SeungYong
+ *
+ */
 public class targetModuleRunner implements ModuleRunner {
 	
 	public void run(String[] args, Namespace parsedArgs){
 		
-		String inputDirPath = parsedArgs.getString("corpusDirPath");
+		String corpusDirPath = parsedArgs.getString("corpusDirPath");
 		String outputDirPath = parsedArgs.getString("outputDirPath");
 		String inputFilePath = parsedArgs.getString("inputFilePath");
 		String domainFilePath = parsedArgs.getString("domainFilePath");
 		String pmiThreshold = parsedArgs.getString("pmiThreshold");
 		String coThreshold = parsedArgs.getString("coThreshold");
 		
-		
-		
 		try {
-			target(inputDirPath, outputDirPath, inputFilePath , domainFilePath ,Double.parseDouble(pmiThreshold), Double.parseDouble(coThreshold));
+			target(corpusDirPath, inputFilePath, domainFilePath, outputDirPath, Double.parseDouble(pmiThreshold), Double.parseDouble(coThreshold));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
-
-	public static void target(String inputDirPath, String outputDirPath, String productFileName, String domainFilePath, double pmi, double co_occurrence) throws IOException{
+/**
+ * 의견 대상 추출을 수행하는 메소드
+ * 
+ * @param corpusDirPath 상호 도메인 PMI 분석을 위해 사용할 여러 도메인의 상품 리뷰 파일이 저장되어 있는 디렉토리의 절대경로/상대경로를 입력 받는 변수
+ * @param inputFilePath 의견 대상을 추출하고자 하는 상품 리뷰 파일의 절대경로/상대경로를 입력 받는 변수
+ * @param domainFilePath 도메인 대표 단어 목록 파일의 절대경로/상대경로를 입력 받는 변수
+ * @param outputDirPath 감성 분석 결과가 저장될 디렉토리의 절대경로/상대경로를 입력 받는 변수이다
+ * @param pmiThreshold 의견 대상 추출 기준이 되는 PMI 점수의 임계값(0~1 사이의 소수값)을 입력 받는 변수
+ * @param coThreshold 의견 대상 추출 기준이 되는 공기 점수의 임계값(0~1 사이의 소수값)을 입력 받는 변수
+ * @return 의견 대상 문자열(String)을 리스트 형태로 리턴
+ * @throws IOException
+ */
+	public static List<String> target(String corpusDirPath, String inputFilePath, String domainFilePath, String outputDirPath, double pmiThreshold, double coThreshold) throws IOException{
 		// TODO Auto-generated method stub
 
 		StanfordCoreNLP pipeline = getPipeline();
 		
-		String dirName = inputDirPath;
-
+		String dirName = corpusDirPath;
+		List<String> tl = new ArrayList<String>();
 		int NumOfDomain = 4; // 총 도메인 수
 		
 		fileIO io = new fileIO();
@@ -52,7 +69,7 @@ public class targetModuleRunner implements ModuleRunner {
 		int numOfProduct = productFileList.size();
 		String allDoc = "";
 		
-	    String outputFileName = outputDirPath +"/"+ productFileName;
+	    String outputFileName = outputDirPath +"/"+ inputFilePath;
 		BufferedWriter output = new BufferedWriter(new FileWriter(outputFileName)); //output directory	
 
 		String domainEntity[] = new String[numOfProduct];
@@ -103,7 +120,7 @@ public class targetModuleRunner implements ModuleRunner {
 					 *  평가할 테스트 파일 선택
 					 * */
 					int targetN = -1;
-					if( productFileList.get(i).getName().contains(productFileName) ){ //domain i 만 성능펴가 하기 위함
+					if( productFileList.get(i).getName().contains(inputFilePath) ){ //domain i 만 성능펴가 하기 위함
 						Tagger_IRNLP irnlp = new Tagger_IRNLP();
 						irnlp.tagger(productFileList.get(i).getPath(), i, nounList, pipeline); 
 						targetN = i;			
@@ -131,7 +148,7 @@ public class targetModuleRunner implements ModuleRunner {
 				
 				
 				StringBuilder jsonResult =  new StringBuilder();
-				jsonResult.append("{\"document\":{\"file name\":\"" + productFileName+"\",");
+				jsonResult.append("{\"document\":{\"file name\":\"" + inputFilePath+"\",");
 				jsonResult.append("\"target_list\":[");
 				
 				for(int i = 0 ; i < nounList.size(); i++){
@@ -150,7 +167,7 @@ public class targetModuleRunner implements ModuleRunner {
 						a.setSimilairty(dv);
 						
 						// 1 평가시 도메인 단어 바꿔야됨
-						if( a.pmiVectorSimilarity(dv[domainToNum.get(targetDomain)]) > pmi && coOccurOpinion.probOfSenti(a.word) > co_occurrence ){  //phone -> target 파일의 도메인을 domain list 번호로 매치해서
+						if( a.pmiVectorSimilarity(dv[domainToNum.get(targetDomain)]) > pmiThreshold && coOccurOpinion.probOfSenti(a.word) > coThreshold ){  //phone -> target 파일의 도메인을 domain list 번호로 매치해서
 							
 							jsonResult.append("{\"opinion target\":\"" + a.word + "\"},");							
 							totalPrintWords++;			
@@ -161,17 +178,15 @@ public class targetModuleRunner implements ModuleRunner {
 						}
 					}
 				}
-
-//				System.out.println(jsonResult.substring( 0, jsonResult.length()-1)+"]}}");
-//				System.out.println(totalPrintWords);
 				System.out.println("The anlysis has been done.");
-				output.write(sb.toString());
+				output.write(SentimentPipeline.jsonBeautifier(sb.toString()));
 				
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}	
 			output.close();
+			return null;
 	}
   static enum Output {
 	    PENNTREES, VECTORS, ROOT, PROBABILITIES

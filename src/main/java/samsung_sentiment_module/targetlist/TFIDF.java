@@ -6,10 +6,10 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 
-public class TFIDF {
+class TFIDF {
 	
 	//리뷰 단위 다큐먼트 배열
-	public static double getTFIDF(String[] doc , String word){
+	protected static double getTFIDF(String[] doc , String word){
 		
 
 		int df = 0;
@@ -44,7 +44,7 @@ public class TFIDF {
 			
 	}
 	// 라인당 중복 고려
-	public static double computeTF(String doc, String word){
+	protected static double computeTF(String doc, String word){
 
 		double count  = 0;
 		double totalWords = 0;

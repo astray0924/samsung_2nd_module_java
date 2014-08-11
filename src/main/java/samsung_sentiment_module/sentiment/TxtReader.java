@@ -4,9 +4,10 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
-public class TxtReader {
 
-	public static String readFile(String file) throws IOException {
+class TxtReader {
+
+	protected static String readFile(String file) throws IOException {
 		BufferedReader reader = new BufferedReader(new FileReader(file));
 		String line = null;
 		StringBuilder stringBuilder = new StringBuilder();

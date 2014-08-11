@@ -9,11 +9,11 @@ import java.util.List;
 //import org.apache.xpath.operations.String;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 
-public class coOccurOpinion {
+class coOccurOpinion {
 
-	public static String text[];
+	protected static String text[];
 		
-	public static void txtToSenti(String[] ori, StanfordCoreNLP pipeline){
+	protected static void txtToSenti(String[] ori, StanfordCoreNLP pipeline){
 		
 		text = new String[ori.length];
 
@@ -39,7 +39,7 @@ public class coOccurOpinion {
 		
 	}
 	
-	public static void co_occur(){
+	protected static void co_occur(){
 				
 		String dirName = "sentiTreeResult";
 		
@@ -62,7 +62,7 @@ public class coOccurOpinion {
 			}
 			
 	}
-	public static double probOfSenti(String word){
+	protected static double probOfSenti(String word){
 		
 		double wordCount = 0;
 		double sentiCount = 0;
@@ -99,7 +99,7 @@ public class coOccurOpinion {
 		
 	}
 	
-	public static String readFile(String file) throws IOException {
+	protected static String readFile(String file) throws IOException {
 		BufferedReader reader = new BufferedReader(new FileReader(file));
 		String line = null;
 		StringBuilder stringBuilder = new StringBuilder();

@@ -56,21 +56,19 @@ import edu.stanford.nlp.trees.TreePrint;
 import edu.stanford.nlp.util.CoreMap;
 import edu.stanford.nlp.util.Generics;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
+
+
 /**
- * A wrapper class which creates a suitable pipeline for the sentiment model and
- * processes raw text. <br>
- * The main program has the following options: <br>
- * <code>-parserModel</code> Which parser model to use, defaults to
- * englishPCFG.ser.gz <br>
- * <code>-sentimentModel</code> Which sentiment model to use, defaults to
- * sentiment.ser.gz <br>
- * <code>-file</code> Which file to process. <br>
- * <code>-stdin</code> Read one line at a time from stdin. <br>
- * <code>-output</code> pennTrees: Output trees with scores at each binarized
- * node. vectors: Number tree nodes and print out the vectors. Defaults to
- * printing just the root. <br>
  * 
- * @author John Bauer
+ * 문장 단위와 단어 단위의 감성 분석 결과를 수행하기 위해 정의된 클래스.
+ * 
+ * 
+ * @author SeungYong
+ *
  */
 
 public class SentimentPipeline implements ModuleRunner {
@@ -82,7 +80,48 @@ public class SentimentPipeline implements ModuleRunner {
 	static LexicalizedParser parser;
 	static StanfordCoreNLP pipeline;
 	static Tagger_IRNLP irnlp;
+	
+	public void run(String[] args, Namespace parsedArgs) {
 
+		String inputDirPath = parsedArgs.getString("inputDirPath");
+		String outputDirPath = parsedArgs.getString("outputDirPath");
+		String fineGrained = parsedArgs.getString("fineGrained");
+
+		boolean threeClass = true;
+		if (fineGrained == null)
+			threeClass = true;
+		else if (fineGrained.contains("Y"))
+			threeClass = false;
+
+		try {
+			List<FileObject> t = senti(inputDirPath, outputDirPath, threeClass);
+			
+			for(int i =0 ; i < t.size() ; i++){
+				List<SentObject> a =  t.get(i).getSentObject();
+				for(int j = 0 ; j < a.size() ; j++){
+					System.out.println(a.get(j).getSentence());
+					System.out.println((a.get(j).getSentPolarity()));
+					List<WordObject> w = a.get(j).getWordObject();
+					for(int k = 0 ; k < w.size() ; k++){
+						System.out.println(w.get(k).opinionTarget);
+						System.out.println(w.get(k).opinionWord);
+						System.out.println(w.get(k).polarity);
+					}
+					System.out.println("--w--");
+				}
+				System.out.println("------");
+			}
+			// targetListWrite("temp");
+		} catch (ClassNotFoundException | IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+	/**
+	 * 기본 생성자
+	 * 감성 분석을 위한 파서 모델을 로딩
+	 */
 	public SentimentPipeline() {
 
 		boolean stdin = false;
@@ -109,6 +148,24 @@ public class SentimentPipeline implements ModuleRunner {
 		this.irnlp = new Tagger_IRNLP();
 
 	}
+	
+	static class adj_info {
+		 private String adj;
+		 private int index;
+		  
+		 adj_info(String adj, int index){
+			this.adj = adj;
+			this.index = index;		 
+		 }
+		 
+		 private String get_adj(){
+			 return adj;
+		 }
+		 private int get_index(){
+			 return index;
+		 }
+		
+	}
 
 	static class PolarityProb {
 		float polar[] = new float[5];
@@ -126,11 +183,7 @@ public class SentimentPipeline implements ModuleRunner {
 		TEXT, TREES
 	}
 
-	/**
-	 * Sets the labels on the tree (except the leaves) to be the integer value
-	 * of the sentiment prediction. Makes it easy to print out with
-	 * Tree.toString()
-	 */
+
 	static void setSentimentLabels(Tree tree) {
 		if (tree.isLeaf()) {
 			return;
@@ -149,10 +202,7 @@ public class SentimentPipeline implements ModuleRunner {
 		cl.setValue(Integer.toString(RNNCoreAnnotations.getPredictedClass(tree)));
 	}
 
-	/**
-	 * Sets the labels on the tree to be the indices of the nodes. Starts
-	 * counting at the root and does a postorder traversal.
-	 */
+
 	static int setIndexLabels(Tree tree, int index) {
 		if (tree.isLeaf()) {
 			return index;
@@ -166,10 +216,7 @@ public class SentimentPipeline implements ModuleRunner {
 		return index;
 	}
 
-	/**
-	 * Outputs the vectors from the tree. Counts the tree nodes the same as
-	 * setIndexLabels.
-	 */
+
 	static int outputTreeVectors(PrintStream out, Tree tree, int index) {
 		if (tree.isLeaf()) {
 			return index;
@@ -182,10 +229,7 @@ public class SentimentPipeline implements ModuleRunner {
 		return index;
 	}
 
-	/**
-	 * Outputs the scores from the tree. Counts the tree nodes the same as
-	 * setIndexLabels.
-	 */
+
 	static int outputTreeScores(PrintStream out, Tree tree, int index) {
 		if (tree.isLeaf()) {
 			return index;
@@ -206,7 +250,7 @@ public class SentimentPipeline implements ModuleRunner {
 		return index;
 	}
 
-	/* n */
+
 	static int revOutputTreeScores(PrintStream out, Tree tree, int index,
 			PolarityProb c, int num) {
 		if (tree.isLeaf()) {
@@ -239,9 +283,6 @@ public class SentimentPipeline implements ModuleRunner {
 		return c;
 	}
 
-	/**
-	 * Outputs a tree using the output style requested
-	 */
 	static void outputTree(PrintStream out, CoreMap sentence,
 			List<Output> outputFormats) {
 		Tree tree = sentence.get(SentimentCoreAnnotations.AnnotatedTree.class);
@@ -291,7 +332,7 @@ public class SentimentPipeline implements ModuleRunner {
 
 	}
 
-	public static void help() {
+	private static void help() {
 		System.err.println("Known command line arguments:");
 		System.err.println("  -sentimentModel <model>: Which model to use");
 		System.err.println("  -parserModel <model>: Which parser to use");
@@ -307,10 +348,8 @@ public class SentimentPipeline implements ModuleRunner {
 				.println("  -filterUnknown: remove neutral and unknown trees from the input.  Only applies to TREES input");
 	}
 
-	/**
-	 * Reads an annotation from the given filename using the requested input.
-	 */
-	public static Annotation getAnnotation(Input inputFormat, String filename,
+
+	private static Annotation getAnnotation(Input inputFormat, String filename,
 			boolean filterUnknown) {
 		switch (inputFormat) {
 		case TEXT: {
@@ -342,17 +381,17 @@ public class SentimentPipeline implements ModuleRunner {
 		}
 	}
 
-	public static void parsing_sentence(String textDoc, String outputFileName,
+	public static List<SentObject> parsing_sentence(String textDoc, String outputFileName,
 			StringBuffer sb, boolean threeClass) throws IOException {
 
+		List<SentObject> sentList = new ArrayList<SentObject>();
 		String regex = "(<sentence)(.+?)(</sentence>)"; // <S> ~ </S>
 
 		Pattern p = Pattern.compile(regex, Pattern.CASE_INSENSITIVE
 				| Pattern.DOTALL | Pattern.MULTILINE);
 		Matcher m = p.matcher(textDoc);
 
-		ArrayList<String> adj_list = new ArrayList<String>();
-		HashMap<String, Integer> adjMap = new HashMap<String, Integer>();
+		ArrayList<adj_info> adj_list = new ArrayList<adj_info>();
 		HashMap<String, Integer> nnMap = new HashMap<String, Integer>();
 
 		m.find();
@@ -371,16 +410,17 @@ public class SentimentPipeline implements ModuleRunner {
 				if (a.contains("\"JJ")) {
 					a = a.replaceAll("<[^>]*>", "");
 					a = a.trim();
-					adj_list.add(a);
-					adjMap.put(a, index);
+					adj_list.add(new adj_info(a,index));
+					
 				} else if (a.contains("\"NN")) {
 					a = a.replaceAll("<[^>]*>", "");
 					a = a.trim();
-					nnMap.put(a, index);
+					nnMap.put(a , index);
 				}
 				index++;
 
 			}
+
 
 			String regex3 = "<[^>]*>"; // 모든 tag 제거
 			g = g.replaceAll(regex3, "");
@@ -388,9 +428,10 @@ public class SentimentPipeline implements ModuleRunner {
 			g = g.replaceAll("   ", " ");
 			g = g.trim();
 
+			System.out.println(g);
 			int non = 0;
-			non = treeBank(g, adj_list, adjMap, nnMap, outputFileName, sb,
-					threeClass);
+			non = treeBank(g, adj_list,  nnMap, outputFileName, sb,
+					threeClass, sentList);
 
 			if (m.find()) {
 				if (non == 0)
@@ -399,15 +440,16 @@ public class SentimentPipeline implements ModuleRunner {
 				break;
 
 			adj_list.clear();
-			adjMap.clear();
+			//adjMap.clear();
 			nnMap.clear();
 
 		}
+		return sentList;
 	}
 
-	public static int treeBank(String s, ArrayList<String> adj_list,
-			HashMap<String, Integer> adjMap, HashMap<String, Integer> nnMap,
-			String outputFileName, StringBuffer sb, boolean threeClass)
+	private static int treeBank(String s, ArrayList<adj_info> adj_list,
+			 HashMap<String, Integer> nnMap,
+			String outputFileName, StringBuffer sb, boolean threeClass, List<SentObject> sentList)
 			throws IOException {
 
 		List<Output> outputFormats = Arrays
@@ -426,7 +468,7 @@ public class SentimentPipeline implements ModuleRunner {
 					.get(CoreAnnotations.SentencesAnnotation.class)) {
 				if (numSen == 0) {
 					for (int k = 0; k < adj_list.size(); k++) {
-						String adj = adj_list.get(k);
+						String adj = adj_list.get(k).get_adj();
 						if (sentence.toString().contains(adj))
 							adjNumOfFirst++;
 					}
@@ -437,13 +479,13 @@ public class SentimentPipeline implements ModuleRunner {
 			if (numSen > 1) // exception handling
 				return 1;
 
-			// dependency parser loading
+			// sentObject List
 
 			int check = 0;
 			for (CoreMap sentence : annotation
 					.get(CoreAnnotations.SentencesAnnotation.class)) {
 
-				Tree parseTree = parser.parse(sentence.toString());
+				//Tree parseTree = parser.parse(sentence.toString());
 
 				Tree t = outputLabelTree(System.out, sentence, outputFormats);
 
@@ -462,14 +504,15 @@ public class SentimentPipeline implements ModuleRunner {
 						+ "\",");
 				sb.append("\"word\":["); // word 배열 시작
 
+				
+				List<WordObject> wordList = new ArrayList<WordObject>();
 				// 모든 형용사에 대하여.
 				int start = 0;
 				for (int i = 0; i < adj_list.size(); i++) {
-					String adj = adj_list.get(i);
-
+					String adj = adj_list.get(i).get_adj();
 					// 형용사의 확률 구함
 
-					int endResult = result.indexOf(adj_list.get(i));
+					int endResult = result.indexOf(adj_list.get(i).get_adj());
 					int adj_index = 0;
 					if (endResult != -1) {
 						String st = result.substring(0, endResult); // tree
@@ -495,12 +538,14 @@ public class SentimentPipeline implements ModuleRunner {
 						String senti = result.substring(sub_end - 2,
 								sub_end - 1);
 
-						int indexOfAdj = adjMap.get(adj);
+
+						int indexOfAdj = adj_list.get(i).get_index();
+						
 
 						Set<Entry<String, Integer>> set = nnMap.entrySet();
 						Iterator<Entry<String, Integer>> it = set.iterator();
 
-						/* 가장 가까운 명사 찾기 */
+						/* tree상에서 가장 가까운 명사 찾기 */
 						int min = 1000;
 						String noun = "";
 						while (it.hasNext()) {
@@ -574,8 +619,12 @@ public class SentimentPipeline implements ModuleRunner {
 								out = out + ",";
 							}
 							sb.append(out);
+							
+							wordList.add(new WordObject(adj,noun,pol));
+							System.out.println("("+noun+","+adj+","+senti +")" );
 
 						}
+	
 
 					}
 
@@ -587,6 +636,7 @@ public class SentimentPipeline implements ModuleRunner {
 				if ((sb.substring(sb.length() - 2)).contains(",]")) {
 					sb.deleteCharAt(sb.length() - 2);
 				}
+				sentList.add(new SentObject(sentence.toString(),polarityToString(Integer.parseInt(sentPolarity)),wordList));
 
 			}// sentence for end
 			sb.append("}");// original sentence 객체 종료
@@ -602,7 +652,7 @@ public class SentimentPipeline implements ModuleRunner {
 	}
 
 	/* xml 결과 폴더 안에 .txt파일 모두 불러오기 */
-	public static List<File> addTxtFile(String dirName) {
+	private static List<File> addTxtFile(String dirName) {
 		File root = new File(dirName);
 		List<File> files = new ArrayList<File>();
 		for (File child : root.listFiles()) {
@@ -614,7 +664,7 @@ public class SentimentPipeline implements ModuleRunner {
 		return files;
 	}
 
-	public static int findShortestNoun(Tree t, int adj, int candidate) {
+	private static int findShortestNoun(Tree t, int adj, int candidate) {
 
 		List<Tree> tr = t.getLeaves();
 		List<Tree> adjTreeList = new ArrayList<Tree>();
@@ -643,7 +693,7 @@ public class SentimentPipeline implements ModuleRunner {
 		return distance;
 	}
 
-	public static boolean isNetral(PolarityProb a) {
+	private static boolean isNetral(PolarityProb a) {
 
 		for (int i = 0; i < 5; i++) {
 			if (a.polar[2] < a.polar[i])
@@ -653,11 +703,24 @@ public class SentimentPipeline implements ModuleRunner {
 		return false;
 
 	}
-
-	public static void senti(String inputDirPath, String outputDirPath,
-			Boolean threeClass) throws IOException, ClassNotFoundException {
+	/**
+	 * 
+	 * 문장 단위의 감성 분석 결과를 수행하는 메소드.
+	 * 
+	 * @param inputDirPath 입력될 파일이 저장되어 있는 입력 디렉토리의 절대/상대경로를 입력받는 변수
+	 * @param outputDirPath 감성 분석 결과가 저장될 절대/상대경로를 입력 받는 변수
+	 * @param fineGrained 감성 분석 결과의 극성을 결정. true 일 경우 5가지 {strong positive, positive, neutral, negative, strong negative}의 클래스로 감성 분석을 시행하고 false 일 경우 3가지 {positive, neutral, negative} 클래스로 감성 분석 시행
+	 * @return List<FileOjbect> FileOjbect의 리스트 형태로 리턴. 입력된 파일 단위로 감성 분석 결과를 저장하기 위해 정의된 FileObject 클래스를 참조
+	 * 
+	 * @throws IOException
+	 * @throws ClassNotFoundException
+	 */
+	public static List<FileObject> senti(String inputDirPath, String outputDirPath,
+			Boolean fineGrained) throws IOException, ClassNotFoundException {
 		List<File> files = addTxtFile(inputDirPath); // input directory
-
+		List<FileObject> resultList = new ArrayList<FileObject>();
+		
+		
 		for (int i = 0; i < files.size(); i++) {
 			StringBuffer sb = new StringBuffer();
 			File file = files.get(i);
@@ -702,7 +765,7 @@ public class SentimentPipeline implements ModuleRunner {
 				}
 				stb.append("\n");
 			}
-			// System.out.println("test");
+			
 			// System.out.println(stb.toString());
 
 			BufferedWriter outputPOS = new BufferedWriter(new FileWriter(
@@ -714,8 +777,10 @@ public class SentimentPipeline implements ModuleRunner {
 			sb.append("{\"file name\":" + fileName); // file path 객체 시작
 			sb.append(",\"sentence\":["); // sentence 배열 시작
 
-			parsing_sentence(taggedDoc, outputFileName, sb, threeClass);
-
+			List<SentObject> so = parsing_sentence(taggedDoc, outputFileName, sb, fineGrained);
+			
+			resultList.add(new FileObject(file.getName(),so));
+			
 			if ((sb.substring(sb.length() - 1)).contains(",")) {
 				sb.deleteCharAt(sb.length() - 1); // 마지막 문장 , 예외처리
 
@@ -726,46 +791,31 @@ public class SentimentPipeline implements ModuleRunner {
 			sb.append("}"); // file path 객체 끝
 
 			sb.append("]}"); // document 배열,객체 끝
-			output.write(sb.toString());
+			
+			
+			
+			output.write(jsonBeautifier(sb.toString()));
 			output.close();
 
 		}
 		System.out.println("The anlysis has been done.");
+		return resultList;
+
 
 	}
-
-	// 최종결과물에선 property 파일 직접 사용 안함
-	public static void senti(String property) throws IOException,
-			ClassNotFoundException {
-
-		String sentiOption = "";
-		String inputDirPath = "";
-		String outputDirPath = "";
-		Boolean threeClass = false;
-
-		BufferedReader prop = new BufferedReader(new InputStreamReader(
-				new FileInputStream(property), "UTF-8"));
-		sentiOption = prop.readLine().toString().trim();
-		inputDirPath = prop.readLine().toString().trim();
-		outputDirPath = prop.readLine().toString().trim();
-
-		inputDirPath = inputDirPath.substring(0, inputDirPath.length());
-
-		if (sentiOption.contains("-targetlist")) {
-
-			String productFileName = prop.readLine().toString().trim();
-			String pmi = prop.readLine().toString().trim();
-			String co_occ = prop.readLine().toString().trim();
-
-		}
-
-		else {
-			if (prop.readLine().equalsIgnoreCase("Y"))
-				threeClass = true;
-			prop.close();
-			senti_sentResult(inputDirPath, outputDirPath, threeClass);
-		}
-
+	/**
+	 * json 형태의 문자열을 indentation이 삽입된 형식으로 리턴
+	 * 
+	 * @param s
+	 * @return
+	 */
+	public static String jsonBeautifier(String s){
+		Gson gson = new GsonBuilder().setPrettyPrinting().create();
+		JsonParser jp = new JsonParser();
+		JsonElement je = jp.parse(s);
+		String prettyJsonString = gson.toJson(je);	
+	
+		return prettyJsonString;
 	}
 
 	private static void targetListWrite(String outputDirPath)
@@ -805,7 +855,7 @@ public class SentimentPipeline implements ModuleRunner {
 		return files;
 	}
 
-	public static void senti_sentResult(String inputDirPath,
+	private static void senti_sentResult(String inputDirPath,
 			String outputDirPath, boolean threeClass) throws IOException,
 			ClassNotFoundException {
 
@@ -858,7 +908,7 @@ public class SentimentPipeline implements ModuleRunner {
 		System.out.println("The anlysis has been done.");
 	}
 
-	public static String printTree(Tree tree, String format) {
+	private static String printTree(Tree tree, String format) {
 		StringWriter sw = new StringWriter();
 		PrintWriter pw = new PrintWriter(sw);
 		TreePrint oTreePrint = new TreePrint(format);
@@ -866,7 +916,7 @@ public class SentimentPipeline implements ModuleRunner {
 		return sw.toString().trim();
 	}
 
-	public static String polarityToString(int polarity) {
+	private static String polarityToString(int polarity) {
 
 		String a = "";
 		switch (polarity) {
@@ -922,24 +972,4 @@ public class SentimentPipeline implements ModuleRunner {
 		return result;
 	}
 
-	public void run(String[] args, Namespace parsedArgs) {
-
-		String inputDirPath = parsedArgs.getString("inputDirPath");
-		String outputDirPath = parsedArgs.getString("outputDirPath");
-		String fineGrained = parsedArgs.getString("fineGrained");
-
-		boolean threeClass = true;
-		if (fineGrained == null)
-			threeClass = true;
-		else if (fineGrained.contains("Y"))
-			threeClass = false;
-
-		try {
-			senti(inputDirPath, outputDirPath, threeClass);
-			// targetListWrite("temp");
-		} catch (ClassNotFoundException | IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
 }

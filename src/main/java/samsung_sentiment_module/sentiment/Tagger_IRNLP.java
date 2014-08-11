@@ -9,11 +9,21 @@ import java.util.StringTokenizer;
 import edu.stanford.nlp.tagger.maxent.MaxentTagger;
 import edu.stanford.nlp.tagger.maxent.TaggerConfig;
 
+/**
+ * POS tagging을 위한 클래스
+ * 
+ * @author SeungYong
+ *
+ */
+
 public class Tagger_IRNLP {
 	
 	static MaxentTagger tagger;
 	
-	
+	/**
+	 * 기본 생성자
+	 * pos 모델을 로딩함
+	 */
 	public Tagger_IRNLP(){
 		String model = "english-left3words-distsim.tagger";
 		TaggerConfig config = new TaggerConfig("-outputFormat","xml",
@@ -23,7 +33,13 @@ public class Tagger_IRNLP {
 		
 	}
 	
-	
+	/**
+	 * 입력 파일의 경로를 받아서 텍스트를 읽은 후 pos 태깅된 문자열을 반환
+	 * @param inputFile
+	 * @return
+	 * @throws IOException
+	 * @throws ClassNotFoundException
+	 */
 	public static String tagger(String inputFile) throws IOException,
 			ClassNotFoundException {
 
@@ -58,29 +74,5 @@ public class Tagger_IRNLP {
 		}
 	}
 	
-
-
-	public static HashMap<Integer, String[]> stringToMap(String input) {
-		String[] token1 = deli(input, " ");
-		HashMap<Integer, String[]> map = new HashMap<Integer, String[]>();
-
-		for (int i = 0; i < token1.length; i++) {
-			map.put(i, deli(token1[i], "_"));
-		}
-
-		return map;
-	}
-
-	public static String[] deli(String f_name, String de) {
-		StringTokenizer st = new StringTokenizer(f_name, de);
-		String arr[] = new String[st.countTokens()];
-		int i = 0;
-		while (st.hasMoreTokens()) {
-			arr[i] = st.nextToken();
-			i++;
-		}
-		return arr;
-
-	}
 
 }

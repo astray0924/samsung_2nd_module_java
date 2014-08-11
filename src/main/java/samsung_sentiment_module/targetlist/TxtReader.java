@@ -6,9 +6,9 @@ import java.io.IOException;
 
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 
-public class TxtReader {
+class TxtReader {
 
-	public static String readFile(String file) throws IOException {
+	protected static String readFile(String file) throws IOException {
 		BufferedReader reader = new BufferedReader(new FileReader(file));
 		String line = null;
 		StringBuilder stringBuilder = new StringBuilder();
@@ -35,7 +35,7 @@ public class TxtReader {
 		return stringBuilder.toString();
 
 	}
-	public static String readFile2(String file) throws IOException {
+	protected static String readFile2(String file) throws IOException {
 		BufferedReader reader = new BufferedReader(new FileReader(file));
 		String line = null;
 		StringBuilder stringBuilder = new StringBuilder();
@@ -63,7 +63,7 @@ public class TxtReader {
 
 	}
 	
-	public static String readFileToReview(String file,String[] domainEntity,int a) throws IOException {
+	protected static String readFileToReview(String file,String[] domainEntity,int a) throws IOException {
 		BufferedReader reader = new BufferedReader(new FileReader(file));
 		String line = null;
 		StringBuilder stringBuilder = new StringBuilder();
@@ -99,7 +99,7 @@ public class TxtReader {
 	
 	
 	// opnion word 뽑아 낼 때 사용
-	public static String readFile(String file, int tempNum ,StanfordCoreNLP pipeline) throws IOException {
+	protected static String readFile(String file, int tempNum ,StanfordCoreNLP pipeline) throws IOException {
 		BufferedReader reader = new BufferedReader(new FileReader(file));
 		String line = null;
 		StringBuilder stringBuilder = new StringBuilder();
@@ -138,13 +138,13 @@ public class TxtReader {
 	
 	// 타겟과 #을 지우고 원래의 문장만 남기기
 	
-	private static String rmNumber(String s){
-		
-		s = s.substring(s.indexOf('#')+2);
+	protected static String rmNumber(String s){
+		if(s.contains("#"))
+			s = s.substring(s.indexOf('#')+2);
 		return s;
 							
 	}
-	private static String rmStopNumber(String s){
+	protected static String rmStopNumber(String s){
 		
 		StringBuilder stringBuilder = new StringBuilder();
 		

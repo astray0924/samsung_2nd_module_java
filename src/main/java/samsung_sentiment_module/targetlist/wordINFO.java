@@ -2,7 +2,7 @@ package samsung_sentiment_module.targetlist;
 
 import java.util.List;
 
-public class wordINFO {
+class wordINFO {
 	
 	String fileName;
 	int fileNum;
@@ -18,24 +18,24 @@ public class wordINFO {
 	List<Integer> adjList;
 
 
-	public wordINFO(int sentNum, String word){
+	protected wordINFO(int sentNum, String word){
 		this.sentNum = sentNum;
 		this.word = word;
 	}
 	
-	public wordINFO(int sentNum, String word, String fileName){
+	protected wordINFO(int sentNum, String word, String fileName){
 		this.sentNum = sentNum;
 		this.word = word;
 		this.fileName = fileName;
 	}
 	
-	public wordINFO(int sentNum, String word, int fileNum){
+	protected wordINFO(int sentNum, String word, int fileNum){
 		this.sentNum = sentNum;
 		this.word = word;
 		this.fileNum = fileNum;
 	}
 	
-	public wordINFO(int fileNum, int sentNum, int tokenNum, String word, String pos , String rawSent, List<Integer> adjList){
+	protected wordINFO(int fileNum, int sentNum, int tokenNum, String word, String pos , String rawSent, List<Integer> adjList){
 		this.fileNum = fileNum;
 		this.sentNum = sentNum;
 		this.tokenNum = tokenNum;
@@ -45,16 +45,16 @@ public class wordINFO {
 		this.adjList = adjList;
 	}
 	
-	public void setPmiScore(double[] a){
+	protected void setPmiScore(double[] a){
 		this.pmiScore = a;		
 	}
 	
-	public double[] getPmiScore(){
+	protected double[] getPmiScore(){
 		return this.pmiScore;
 	}
 	
 	
-	public void setSimilairty(double[][] a) {
+	protected void setSimilairty(double[][] a) {
 		double[] si =  new double[a.length];
 		
 		for(int i = 0 ; i < a.length ; i++){
@@ -64,7 +64,7 @@ public class wordINFO {
 		
 		this.similarity = si;		
 	}
-	public double getMaxSimilarity(){
+	protected double getMaxSimilarity(){
 		
 		double inf = -1000;
 		for(int i = 0 ; i < this.similarity.length ; i++)
@@ -77,7 +77,7 @@ public class wordINFO {
 
 	}
 	
-	public double[] getSimilarity(){
+	protected double[] getSimilarity(){
 		return this.similarity;
 	}
 	
@@ -94,7 +94,7 @@ public class wordINFO {
 		
 		//this.sentence + "\n" +
 	}
-	public boolean hasSentiAdj(){
+	protected boolean hasSentiAdj(){
 		
 		if(this.adjList.size() > 0)
 			return true;
@@ -102,7 +102,7 @@ public class wordINFO {
 			return false;
 	}
 	
-	public void printVector(double[] a){
+	protected void printVector(double[] a){
 		
 		System.out.print("(");
 		for(int i =  0 ; i < a.length ; i++){
@@ -116,7 +116,7 @@ public class wordINFO {
 		
 	}
 	
-	public double pmiVectorSimilarity(double[] dv){
+	protected double pmiVectorSimilarity(double[] dv){
 		
 		double a = 0;
 		

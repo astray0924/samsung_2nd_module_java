@@ -6,10 +6,10 @@ import java.io.StringReader;
 
 
 
-public class computePMI {
+class computePMI {
 
 	// tf idf 추가됨
-	public static double pmiScore(String doc, String word1, String word2, String review[]) throws IOException{
+	protected static double pmiScore(String doc, String word1, String word2, String review[]) throws IOException{
 		
 		StringReader sr = new StringReader(doc);
 		BufferedReader br = new BufferedReader(sr);

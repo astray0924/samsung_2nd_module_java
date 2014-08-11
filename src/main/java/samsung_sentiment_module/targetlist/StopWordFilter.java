@@ -15,24 +15,24 @@ import java.util.Map;
 
 import samsung_sentiment_module.hierarchy.FeatureExtractor;
 
-public class StopWordFilter {
+class StopWordFilter {
 	
 	
 	static Map<String,String> mapa = new HashMap<String,String>();
 	
 	
-	public static void runStopWord(){
+	protected static void runStopWord(){
 		
 		readFile("stopwordlist");
 	}
 	
-	public String stopRemoval(String line){
+	protected String stopRemoval(String line){
 		return line;
 		
 
 	}
 	
-	public static void readFile(String inputFileName){
+	protected static void readFile(String inputFileName){
 		
 		InputStream is = StopWordFilter.class
 				.getResourceAsStream("/stopwordlist");

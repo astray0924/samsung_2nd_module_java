@@ -7,9 +7,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class fileIO {
+class fileIO {
 	
-	public static List<File> addTxtFile(String dirName) {
+	protected static List<File> addTxtFile(String dirName) {
 		File root = new File(dirName);
 		List<File> files = new ArrayList<File>();
 		for (File child : root.listFiles()) {
@@ -23,7 +23,7 @@ public class fileIO {
 		return files;
 	}
 	
-	public static List<File> addPosFile(String dirName) {
+	protected static List<File> addPosFile(String dirName) {
 		File root = new File(dirName);
 		List<File> files = new ArrayList<File>();
 		for (File child : root.listFiles()) {
@@ -37,7 +37,7 @@ public class fileIO {
 		return files;
 	}
 	
-	public static void writeFile(String outputString, String outputFileName) {
+	protected static void writeFile(String outputString, String outputFileName) {
 		try {
 
 			BufferedWriter out = new BufferedWriter(new FileWriter(

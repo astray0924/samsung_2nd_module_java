@@ -24,11 +24,11 @@ import edu.stanford.nlp.tagger.maxent.TaggerConfig;
 
 
 
-public class Tagger_IRNLP {
+class Tagger_IRNLP {
 	
 	static MaxentTagger tagger;
 	
-	public Tagger_IRNLP(){
+	protected Tagger_IRNLP(){
 		String model = "english-left3words-distsim.tagger";
 		TaggerConfig config = new TaggerConfig("-outputFormat","xml",
 				"-model", model);
@@ -37,7 +37,7 @@ public class Tagger_IRNLP {
 		
 	}
 	
-	public static String tagger(String inputFile, int fileNum, ArrayList<wordINFO> nounList, StanfordCoreNLP pipeline) throws IOException {
+	protected static String tagger(String inputFile, int fileNum, ArrayList<wordINFO> nounList, StanfordCoreNLP pipeline) throws IOException {
 
 		String raw = TxtReader.readFile(inputFile);  // 각각의 file path
 
@@ -50,7 +50,7 @@ public class Tagger_IRNLP {
 		return tagged;
 
 	}
-	private static String setRootTag(String st){
+	protected static String setRootTag(String st){
 		StringBuilder stringBuilder = new StringBuilder();
 		stringBuilder.append("<review>");
 		stringBuilder.append(st);
@@ -59,7 +59,7 @@ public class Tagger_IRNLP {
 		
 	}
 	
-	public static void readXML(String xmlString, ArrayList<wordINFO> nounList ,int fileNum,StanfordCoreNLP pipeline ){
+	protected static void readXML(String xmlString, ArrayList<wordINFO> nounList ,int fileNum,StanfordCoreNLP pipeline ){
 		
 		try {
 			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
@@ -102,7 +102,7 @@ public class Tagger_IRNLP {
 		}
 	}
 	
-	public static List<Integer> getSentiAdj(NodeList words, String rawSent,StanfordCoreNLP pipeline){
+	protected static List<Integer> getSentiAdj(NodeList words, String rawSent,StanfordCoreNLP pipeline){
 		
 	    NamedNodeMap attributes;
 	    // sentiment 모듈에 의한 트리 결과 얻기
@@ -150,7 +150,7 @@ public class Tagger_IRNLP {
 	}
 	
 	
-	public static void listAllAttributes(Element element, ArrayList<wordINFO> nounList ,int fileNum,int sentNum, String rawSent, List<Integer> adjList){
+	protected static void listAllAttributes(Element element, ArrayList<wordINFO> nounList ,int fileNum,int sentNum, String rawSent, List<Integer> adjList){
  //       System.out.println("List attributes for node: " + element.getNodeName());
 
         NamedNodeMap attributes = element.getAttributes();
@@ -181,7 +181,7 @@ public class Tagger_IRNLP {
 	}
 	
 
-	public static HashMap<Integer, String[]> stringToMap(String input) {
+	protected static HashMap<Integer, String[]> stringToMap(String input) {
 		String[] token1 = deli(input, " ");
 		HashMap<Integer, String[]> map = new HashMap<Integer, String[]>();
 
@@ -192,7 +192,7 @@ public class Tagger_IRNLP {
 		return map;
 	}
 
-	public static String[] deli(String f_name, String de) {
+	protected static String[] deli(String f_name, String de) {
 		StringTokenizer st = new StringTokenizer(f_name, de);
 		String arr[] = new String[st.countTokens()];
 		int i = 0;

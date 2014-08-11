@@ -17,15 +17,12 @@ import edu.stanford.nlp.util.CoreMap;
 
 
 
-public class extSentiAdj {
-	
-	public extSentiAdj(){
+class extSentiAdj {
 
-	}
     static enum Output {
 	    PENNTREES, VECTORS, ROOT, PROBABILITIES
 	}
-    static Tree outputLabelTree(PrintStream out, CoreMap sentence, List<Output> outputFormats) {
+    protected static Tree outputLabelTree(PrintStream out, CoreMap sentence, List<Output> outputFormats) {
 
 	    Tree tree = sentence.get(SentimentCoreAnnotations.AnnotatedTree.class);
 	    
@@ -35,7 +32,7 @@ public class extSentiAdj {
 	    return copy;
 	        
   }
-    static void setSentimentLabels(Tree tree) {
+    protected static void setSentimentLabels(Tree tree) {
         if (tree.isLeaf()) {
           return;
         }
@@ -52,7 +49,7 @@ public class extSentiAdj {
         cl.setValue(Integer.toString(RNNCoreAnnotations.getPredictedClass(tree)));
       }
 	
-	public static String sentiResult(String sent, StanfordCoreNLP pipeline){
+    protected static String sentiResult(String sent, StanfordCoreNLP pipeline){
 		
 		
 		String sentResult = null;
@@ -80,10 +77,6 @@ public class extSentiAdj {
 		return sentResult;
 	}
 	
-	public static void xmlToSentiAdj(String xmlString){
-		
-
-	}
 	
 
 	
