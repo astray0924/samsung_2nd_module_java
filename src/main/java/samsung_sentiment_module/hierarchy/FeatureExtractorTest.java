@@ -16,7 +16,7 @@ public class FeatureExtractorTest {
 	@Test
 	public void testExtract() {
 		try {
-			extractor.extract();
+			extractor.extractCountContexts();
 		} catch (IOException e) {
 
 			e.printStackTrace();
@@ -29,7 +29,7 @@ public class FeatureExtractorTest {
 				"nice\tresturant", "Chinese restaurant" };
 
 		for (String token : testTokens) {
-			String newToken = extractor.sanitize(token);
+			String newToken = extractor.sanitizeToken(token);
 
 			System.out.println(newToken);
 		}
@@ -38,7 +38,7 @@ public class FeatureExtractorTest {
 	@Test
 	public void testPopulateCentroids() throws IOException {
 		extractor.populateCentroids();
-		extractor.debugCentroids();
+		extractor.getCentroids();
 	}
 
 }

@@ -21,12 +21,12 @@ public class HierarchyModuleRunner implements ModuleRunner {
 
 			if (cacheDirPath != null) {
 
-				extractor.loadCache(cacheDirPath);
+				extractor.loadVectorCache(cacheDirPath);
 			} else {
 
-				extractor.extract();
+				extractor.extractCountContexts();
 				extractor.vectorize();
-				extractor.saveCache();
+				extractor.storeVectorCache();
 			}
 
 			extractor.classifyAll();
