@@ -180,7 +180,6 @@ public class targetModuleRunner implements ModuleRunner {
 				jsonResult.append("]}}");
 				
 				System.out.println("The anlysis has been done.");
-				System.out.println(jsonResult.toString());
 				output.write(SentimentPipeline.jsonBeautifier(jsonResult.toString()));
 				
 			} catch (IOException e) {
