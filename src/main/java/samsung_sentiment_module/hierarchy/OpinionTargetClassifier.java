@@ -39,7 +39,7 @@ import com.google.common.collect.Multisets;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.TreeMultimap;
 
-public class FeatureVectorizer {
+public class OpinionTargetClassifier {
 	private String inputFilePath = null;
 	private String outputDirPath = null;
 	private String centroidFilePath = null;
@@ -76,7 +76,7 @@ public class FeatureVectorizer {
 	// 분류를 위한 centroid
 	private Map<String, String> centroids = new HashMap<String, String>();
 
-	public FeatureVectorizer(String inputFilePath, String outputDirPath,
+	public OpinionTargetClassifier(String inputFilePath, String outputDirPath,
 			String centroidFilePath) throws IOException {
 		// output & centroid path
 		this.inputFilePath = inputFilePath;
@@ -175,6 +175,10 @@ public class FeatureVectorizer {
 		return countContexts;
 	}
 
+	public Map<String, HashMap<String, Double>> getNormalizedContexts() {
+		return ppmiContexts;
+	}
+
 	public void vectorizeContexts() {
 		// 형용사(context) vocabulary 생성
 		adjVocabulary = new Alphabet();
@@ -223,9 +227,6 @@ public class FeatureVectorizer {
 			ppmiContexts.put(np, ppmiContext);
 
 		}
-		// System.out.println(countContexts);
-		// System.out.println(ppmiContexts);
-		// System.out.println("");
 
 		// PPMI 벡터를 FeatureVector 형태로 변환
 		for (java.util.Map.Entry<String, HashMap<String, Double>> entry : ppmiContexts
@@ -260,6 +261,53 @@ public class FeatureVectorizer {
 		}
 	}
 
+	protected void classifySingle(String className, String centroid)
+			throws IOException {
+		if (!contextVectors.containsKey(centroid)) {
+			throw new IllegalArgumentException(
+					"Centroid is invalid (no such a target: " + centroid + ")");
+		}
+	
+		// 유사도 계산
+		NormalizedDotProductMetric metric = new NormalizedDotProductMetric();
+		FeatureVector targetVector = contextVectors.get(centroid);
+		Multimap<Double, String> sortedBySim = TreeMultimap.create(Ordering
+				.natural().reverse(), Ordering.natural());
+		for (String t : contextVectors.keySet()) {
+			FeatureVector otherVector = contextVectors.get(t);
+			Double sim = 1 - metric.distance(targetVector, otherVector);
+			if (!t.isEmpty() && !sim.isNaN()) {
+				sortedBySim.put(sim, t);
+			}
+		}
+	
+		// 출력
+		Path dir = Paths.get(outputDirPath).resolve("hierarchy");
+		if (!Files.exists(dir)) {
+			Files.createDirectories(dir);
+		}
+	
+		Path outputFile = dir.resolve(className + ".txt");
+		JSONObject json = new JSONObject();
+	
+		try (BufferedWriter writer = Files.newBufferedWriter(outputFile,
+				StandardCharsets.UTF_8, StandardOpenOption.WRITE,
+				StandardOpenOption.CREATE)) {
+			for (Double t : sortedBySim.keySet()) {
+				JSONArray array = new JSONArray();
+				array.addAll(sortedBySim.get(t));
+	
+				json.put(t, array);
+			}
+	
+			writer.write(json.toJSONString());
+	
+			System.out.println(outputFile.toString()
+					+ " is generated as output");
+		}
+	
+	}
+
 	public ImmutableSet<Entry<String>> getAllTokens() {
 		return Multisets.copyHighestCountFirst(tokenSet).entrySet();
 	}
@@ -272,9 +320,49 @@ public class FeatureVectorizer {
 		return centroids;
 	}
 
+	public void storeVectorsAsCache() throws IOException {
+		FileOutputStream fos = null;
+		ObjectOutputStream oos = null;
+		Path dir = Paths.get("output/hierarchy_cache");
+		if (!Files.isDirectory(dir)) {
+			Files.createDirectories(dir);
+		}
+	
+		// vocabulary 저장
+		fos = new FileOutputStream(dir.resolve("vocabulary.dat").toFile());
+		oos = new ObjectOutputStream(fos);
+		oos.writeObject(adjVocabulary);
+		fos.close();
+	
+		// countContexts 저장
+		fos = new FileOutputStream(dir.resolve("countContexts.dat").toFile());
+		oos = new ObjectOutputStream(fos);
+		oos.writeObject(countContexts);
+		fos.close();
+	
+		// ppmiContexts 저장
+		fos = new FileOutputStream(dir.resolve("ppmiContexts.dat").toFile());
+		oos = new ObjectOutputStream(fos);
+		oos.writeObject(ppmiContexts);
+		fos.close();
+	
+		// vectors 저장
+		fos = new FileOutputStream(dir.resolve("vectors.dat").toFile());
+		oos = new ObjectOutputStream(fos);
+		oos.writeObject(contextVectors);
+		fos.close();
+	
+		// close the stream
+		oos.close();
+	
+		System.out.println("Processed vectors are cached at: "
+				+ dir.toAbsolutePath());
+		System.out.println("");
+	}
+
 	@SuppressWarnings("unchecked")
-	public void loadVectorsFromCache(String cacheDir) throws ClassNotFoundException,
-			IOException {
+	public void loadVectorsFromCache(String cacheDir)
+			throws ClassNotFoundException, IOException {
 		FileInputStream fis = null;
 		ObjectInputStream ois = null;
 		Path dir = Paths.get(cacheDir);
@@ -310,93 +398,6 @@ public class FeatureVectorizer {
 		fis.close();
 	}
 
-	public void storeVectorsAsCache() throws IOException {
-		FileOutputStream fos = null;
-		ObjectOutputStream oos = null;
-		Path dir = Paths.get("output/hierarchy_cache");
-		if (!Files.isDirectory(dir)) {
-			Files.createDirectories(dir);
-		}
-
-		// vocabulary 저장
-		fos = new FileOutputStream(dir.resolve("vocabulary.dat").toFile());
-		oos = new ObjectOutputStream(fos);
-		oos.writeObject(adjVocabulary);
-		fos.close();
-
-		// countContexts 저장
-		fos = new FileOutputStream(dir.resolve("countContexts.dat").toFile());
-		oos = new ObjectOutputStream(fos);
-		oos.writeObject(countContexts);
-		fos.close();
-
-		// ppmiContexts 저장
-		fos = new FileOutputStream(dir.resolve("ppmiContexts.dat").toFile());
-		oos = new ObjectOutputStream(fos);
-		oos.writeObject(ppmiContexts);
-		fos.close();
-
-		// vectors 저장
-		fos = new FileOutputStream(dir.resolve("vectors.dat").toFile());
-		oos = new ObjectOutputStream(fos);
-		oos.writeObject(contextVectors);
-		fos.close();
-
-		// close the stream
-		oos.close();
-
-		System.out.println("Processed vectors are cached at: "
-				+ dir.toAbsolutePath());
-		System.out.println("");
-	}
-
-	protected void classifySingle(String className, String centroid)
-			throws IOException {
-		if (!contextVectors.containsKey(centroid)) {
-			throw new IllegalArgumentException(
-					"Centroid is invalid (no such a target: " + centroid + ")");
-		}
-
-		// 유사도 계산
-		NormalizedDotProductMetric metric = new NormalizedDotProductMetric();
-		FeatureVector targetVector = contextVectors.get(centroid);
-		Multimap<Double, String> sortedBySim = TreeMultimap.create(Ordering
-				.natural().reverse(), Ordering.natural());
-		for (String t : contextVectors.keySet()) {
-			FeatureVector otherVector = contextVectors.get(t);
-			Double sim = 1 - metric.distance(targetVector, otherVector);
-			if (!t.isEmpty() && !sim.isNaN()) {
-				sortedBySim.put(sim, t);
-			}
-		}
-
-		// 출력
-		Path dir = Paths.get(outputDirPath).resolve("hierarchy");
-		if (!Files.exists(dir)) {
-			Files.createDirectories(dir);
-		}
-
-		Path outputFile = dir.resolve(className + ".txt");
-		JSONObject json = new JSONObject();
-
-		try (BufferedWriter writer = Files.newBufferedWriter(outputFile,
-				StandardCharsets.UTF_8, StandardOpenOption.WRITE,
-				StandardOpenOption.CREATE)) {
-			for (Double t : sortedBySim.keySet()) {
-				JSONArray array = new JSONArray();
-				array.addAll(sortedBySim.get(t));
-
-				json.put(t, array);
-			}
-
-			writer.write(json.toJSONString());
-
-			System.out.println(outputFile.toString()
-					+ " is generated as output");
-		}
-
-	}
-
 	protected String sanitizeToken(String token) {
 		String sanitizedToken = token;
 
@@ -428,7 +429,7 @@ public class FeatureVectorizer {
 	}
 
 	protected void populateStopWords() throws IOException {
-		InputStream is = FeatureVectorizer.class
+		InputStream is = OpinionTargetClassifier.class
 				.getResourceAsStream("/stopwords.txt");
 
 		try (BufferedReader reader = new BufferedReader(new InputStreamReader(

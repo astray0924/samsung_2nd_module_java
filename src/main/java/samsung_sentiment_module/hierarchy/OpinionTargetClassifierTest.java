@@ -5,12 +5,12 @@ import java.io.IOException;
 import org.junit.Before;
 import org.junit.Test;
 
-public class FeatureExtractorTest {
-	FeatureVectorizer extractor;
+public class OpinionTargetClassifierTest {
+	OpinionTargetClassifier extractor;
 
 	@Before
 	public void init() throws IOException {
-		extractor = new FeatureVectorizer("./temp/tagged.pos", "./output", "./centroids.txt");
+		extractor = new OpinionTargetClassifier("./temp/tagged.pos", "./output", "./centroids.txt");
 	}
 
 	@Test
