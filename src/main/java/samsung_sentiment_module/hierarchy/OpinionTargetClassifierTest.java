@@ -31,7 +31,7 @@ public class OpinionTargetClassifierTest {
 				"nice\tresturant", "Chinese restaurant", "decor" };
 
 		for (String token : testTokens) {
-			String newToken = extractor.sanitizeToken(token);
+			String newToken = extractor.correctSpelling(token);
 
 			System.out.println(newToken);
 		}

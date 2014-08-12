@@ -159,7 +159,7 @@ public class OpinionTargetClassifier {
 							np = np.replaceAll("\\bthe\\b", "").trim(); // 전치사
 																		// the
 																		// 제거
-							np = sanitizeToken(np);
+//							np = correctSpelling(np);
 
 							// 저장
 							nps.add(np);
@@ -176,7 +176,7 @@ public class OpinionTargetClassifier {
 
 							// 언어적 처리
 							jj = jj.toLowerCase();
-							jj = sanitizeToken(jj);
+							jj = correctSpelling(jj);
 							Stemmer stemmer = new Stemmer();
 							stemmer.add(jj.toCharArray(), jj.length());
 							stemmer.stem();
@@ -505,7 +505,7 @@ public class OpinionTargetClassifier {
 
 	}
 
-	protected String sanitizeToken(String token) {
+	protected String correctSpelling(String token) {
 		String sanitizedToken = token;
 
 		if (token.contains(" ") || token.contains("\t")) { // 두 단어 이상으로 이루어진 구일
@@ -516,7 +516,7 @@ public class OpinionTargetClassifier {
 			for (String t : tokens) {
 				if (!stopwords.contains(t)) {
 					sBuilder.append(" ");
-					sBuilder.append(sanitizeToken(t));
+					sBuilder.append(correctSpelling(t));
 				}
 			}
 
