@@ -10,7 +10,9 @@ public class OpinionTargetClassifierTest {
 
 	@Before
 	public void init() throws IOException {
-		extractor = new OpinionTargetClassifier("./temp/tagged.pos", "./output", "./centroids.txt");
+		extractor = new OpinionTargetClassifier(
+				"C:\\Users\\kyoungrok.jang\\Desktop\\hotels_contents_tag.txt",
+				"./output", "C:\\Users\\kyoungrok.jang\\Desktop\\centroid.txt");
 	}
 
 	@Test
@@ -26,7 +28,7 @@ public class OpinionTargetClassifierTest {
 	@Test
 	public void testSanitize() throws IOException {
 		String[] testTokens = new String[] { "test", "test2", "nice resturant",
-				"nice\tresturant", "Chinese restaurant" };
+				"nice\tresturant", "Chinese restaurant", "decor" };
 
 		for (String token : testTokens) {
 			String newToken = extractor.sanitizeToken(token);

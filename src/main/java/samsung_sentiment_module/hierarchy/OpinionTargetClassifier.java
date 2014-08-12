@@ -352,7 +352,7 @@ public class OpinionTargetClassifier {
 	public void storeVectorsAsCache() throws IOException {
 		FileOutputStream fos = null;
 		ObjectOutputStream oos = null;
-		Path dir = Paths.get("output/hierarchy_cache");
+		Path dir = Paths.get(outputDirPath).resolve("hierarchy_cache");
 		if (!Files.isDirectory(dir)) {
 			Files.createDirectories(dir);
 		}
@@ -361,6 +361,12 @@ public class OpinionTargetClassifier {
 		fos = new FileOutputStream(dir.resolve("vocabulary.dat").toFile());
 		oos = new ObjectOutputStream(fos);
 		oos.writeObject(adjVocabulary);
+		fos.close();
+
+		// NP 저장
+		fos = new FileOutputStream(dir.resolve("np.dat").toFile());
+		oos = new ObjectOutputStream(fos);
+		oos.writeObject(npSet);
 		fos.close();
 
 		// countContexts 저장
@@ -413,6 +419,12 @@ public class OpinionTargetClassifier {
 		fis = new FileInputStream(dir.resolve("vocabulary.dat").toFile());
 		ois = new ObjectInputStream(fis);
 		adjVocabulary = (Alphabet) ois.readObject();
+		fis.close();
+
+		// NP
+		fis = new FileInputStream(dir.resolve("np.dat").toFile());
+		ois = new ObjectInputStream(fis);
+		npSet = (Multiset<String>) ois.readObject();
 		fis.close();
 
 		// countContext
